@@ -45,8 +45,16 @@ public class QjldCallBackController {
         }
         DecisionResDetailDTO decisionResDetailDTO = engineResult.getData().getDataContent();
         TbDecisionResDetail tbDecisionResDetail = decisionResDetailService.selectByTransId(decisionResDetailDTO.getTrans_id());
-        Order order = new Order();
-        order.setId(tbDecisionResDetail.getOrder_id());
+        Order order = orderService.selectByPrimaryKey(tbDecisionResDetail.getOrder_id());
+        if (order == null) {
+            log.info("风控订单，订单不存在");
+            return ConstantUtils.FAIL;
+
+        }
+        if (order.getStatus() != ConstantUtils.newOrderStatus) { // 没有完成订单才能进入风控查询模块
+            log.info("风控订单，订单状态异常");
+            return ConstantUtils.FAIL;
+        }
         if (tbDecisionResDetail != null) {
             if (PolicyResultEnum.AGREE.getCode().equals(decisionResDetailDTO.getCode())) {
                 order.setStatus(ConstantUtils.agreeOrderStatus);

@@ -10,7 +10,7 @@ import com.mod.loan.service.QjldPolicyService;
 import com.mod.loan.util.ConstantUtils;
 import com.mod.loan.util.RsaCodingUtil;
 import com.mod.loan.util.RsaReadUtil;
-import com.sun.org.apache.xml.internal.security.utils.Base64;
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
