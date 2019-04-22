@@ -10,6 +10,7 @@ import com.mod.loan.config.redis.RedisMapper;
 import com.mod.loan.enums.PolicyResultEnum;
 import com.mod.loan.model.DTO.DecisionResDetailDTO;
 import com.mod.loan.model.Order;
+import com.mod.loan.model.TbDecisionResDetail;
 import com.mod.loan.service.*;
 import com.mod.loan.util.ConstantUtils;
 import org.slf4j.Logger;
@@ -41,6 +42,9 @@ public class QjldRiskManageQueryConsumer {
     private UserService userService;
     @Autowired
     private UserBankService userBankService;
+
+    @Autowired
+    private DecisionResDetailService decisionResDetailService;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -76,6 +80,8 @@ public class QjldRiskManageQueryConsumer {
             rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_query_wait_long, qjldOrderIdMessage);
             return;
         }
+        TbDecisionResDetail tbDecisionResDetail = new TbDecisionResDetail(decisionResDetailDTO);
+        decisionResDetailService.updateByTransId(tbDecisionResDetail);
         if (PolicyResultEnum.AGREE.getCode().equals(decisionResDetailDTO.getCode())) {
             order.setStatus(ConstantUtils.agreeOrderStatus);
             orderService.updateOrderByRisk(order);

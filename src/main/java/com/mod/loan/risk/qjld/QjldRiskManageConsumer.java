@@ -9,10 +9,7 @@ import com.mod.loan.config.rabbitmq.RabbitConst;
 import com.mod.loan.config.redis.RedisConst;
 import com.mod.loan.config.redis.RedisMapper;
 import com.mod.loan.model.DTO.DecisionResDetailDTO;
-import com.mod.loan.model.Merchant;
-import com.mod.loan.model.Order;
-import com.mod.loan.model.User;
-import com.mod.loan.model.UserBank;
+import com.mod.loan.model.*;
 import com.mod.loan.service.*;
 import com.mod.loan.util.TimeUtils;
 import org.joda.time.DateTime;
@@ -45,6 +42,9 @@ public class QjldRiskManageConsumer {
     private UserService userService;
     @Autowired
     private UserBankService userBankService;
+
+    @Autowired
+    private DecisionResDetailService decisionResDetailService;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -81,6 +81,10 @@ public class QjldRiskManageConsumer {
             String serials_no = String.format("%s%s%s", "p", new DateTime().toString(TimeUtils.dateformat5),
                     user.getId());
             DecisionResDetailDTO decisionResDetailDTO = qjldPolicyService.QjldPolicyNoSync(serials_no, user, userBank);
+            if (decisionResDetailDTO != null) {
+                TbDecisionResDetail tbDecisionResDetail = new TbDecisionResDetail(decisionResDetailDTO);
+                decisionResDetailService.insert(tbDecisionResDetail);
+            }
             rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_query_wait, new QjldOrderIdMessage(decisionResDetailDTO.getTrans_id(), riskAuditMessage.getOrderId()));
         } catch (Exception e) {
 
