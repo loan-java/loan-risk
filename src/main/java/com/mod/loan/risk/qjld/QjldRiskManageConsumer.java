@@ -61,7 +61,7 @@ public class QjldRiskManageConsumer {
     @RabbitHandler
     public void risk_order_notify(Message mess) {
         RiskAuditMessage riskAuditMessage = JSONObject.parseObject(mess.getBody(), RiskAuditMessage.class);
-        if (!redisMapper.lock(RedisConst.ORDER_LOCK + riskAuditMessage.getOrderId(), 30)) {
+        if (!redisMapper.lock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId(), 30)) {
             log.error("风控查询消息重复，message={}", JSON.toJSONString(riskAuditMessage));
             return;
         }
@@ -82,12 +82,12 @@ public class QjldRiskManageConsumer {
                     user.getId());
             DecisionResDetailDTO decisionResDetailDTO = qjldPolicyService.QjldPolicyNoSync(serials_no, user, userBank);
             if (decisionResDetailDTO != null) {
-                TbDecisionResDetail tbDecisionResDetail = new TbDecisionResDetail(decisionResDetailDTO);
+                TbDecisionResDetail tbDecisionResDetail = new TbDecisionResDetail(riskAuditMessage.getOrderId(), decisionResDetailDTO.getDecision_no(), decisionResDetailDTO.getTrans_id(), decisionResDetailDTO.getOrderStatus());
                 decisionResDetailService.insert(tbDecisionResDetail);
             }
             rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_query_wait, new QjldOrderIdMessage(decisionResDetailDTO.getTrans_id(), riskAuditMessage.getOrderId()));
         } catch (Exception e) {
-
+            log.error("风控订单,异常{}", JSON.toJSONString(e));
         }
     }
 

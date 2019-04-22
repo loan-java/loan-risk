@@ -6,9 +6,9 @@ package com.mod.loan.common.message;
 public class QjldOrderIdMessage {
 
     /**
-     * 风控订单id
+     * 风控请求订单id
      */
-    private String trans_id;
+    private String transId;
 
     /**
      * 平台订单ID
@@ -17,18 +17,15 @@ public class QjldOrderIdMessage {
 
     private int times;// 查询次数
 
-    public QjldOrderIdMessage(String trans_id, Long orderId) {
-        this.trans_id = trans_id;
+    public QjldOrderIdMessage(){
+
+    }
+
+    public QjldOrderIdMessage(String transId, Long orderId) {
+        this.transId = transId;
         this.orderId = orderId;
     }
 
-    public String getTrans_id() {
-        return trans_id;
-    }
-
-    public void setTrans_id(String trans_id) {
-        this.trans_id = trans_id;
-    }
 
     public Long getOrderId() {
         return orderId;
@@ -44,5 +41,14 @@ public class QjldOrderIdMessage {
 
     public void setTimes(int times) {
         this.times = times;
+    }
+
+
+    public String getTransId() {
+        return transId;
+    }
+
+    public void setTransId(String transId) {
+        this.transId = transId;
     }
 }

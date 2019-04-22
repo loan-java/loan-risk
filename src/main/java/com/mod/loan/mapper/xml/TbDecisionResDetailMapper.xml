@@ -6,7 +6,7 @@
           WARNING - @mbg.generated
         -->
         <id column="id" property="id" jdbcType="BIGINT"/>
-        <id column="order_id" property="order_id" jdbcType="BIGINT"/>
+        <result column="order_id" property="order_id" jdbcType="BIGINT"/>
         <result column="decision_no" property="decisionNo" jdbcType="VARCHAR"/>
         <result column="trans_id" property="transId" jdbcType="VARCHAR"/>
         <result column="orderStatus" property="orderstatus" jdbcType="VARCHAR"/>
@@ -14,7 +14,7 @@
         <result column="fee" property="fee" jdbcType="BIT"/>
         <result column="custom_grade" property="customGrade" jdbcType="VARCHAR"/>
         <result column="code" property="code" jdbcType="VARCHAR"/>
-        <result column="desc" property="desc" jdbcType="VARCHAR"/>
+        <result column="descs" property="descs" jdbcType="VARCHAR"/>
         <result column="resScore" property="resscore" jdbcType="DOUBLE"/>
         <result column="strategies" property="strategies" jdbcType="VARCHAR"/>
         <result column="createTime" property="createtime" jdbcType="TIMESTAMP"/>
@@ -22,15 +22,13 @@
     </resultMap>
 
     <update id="updateByTransId" parameterType="com.mod.loan.model.TbDecisionResDetail">
-    update tb_decision_res_detail set order_id =#{order_id},
-    decision_no =#{decisionNo},
-    trans_id =#{transId},
+    update tb_decision_res_detail set
     orderStatus =#{orderstatus},
     order_money =#{orderMoney},
     fee =#{fee},
     custom_grade =#{customGrade},
     code =#{code},
-    desc =#{desc},
+    descs =#{descs},
     resScore =#{resscore},
     createTime =#{createtime},
     updateTime = now()

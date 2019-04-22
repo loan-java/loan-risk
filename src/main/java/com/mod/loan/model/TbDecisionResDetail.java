@@ -35,8 +35,8 @@ public class TbDecisionResDetail {
     @Column(name = "code")
     private String code;
 
-    @Column(name = "desc")
-    private String desc;
+    @Column(name = "descs")
+    private String descs;
 
     @Column(name = "resScore")
     private Double resscore;
@@ -152,15 +152,15 @@ public class TbDecisionResDetail {
     /**
      * @return desc
      */
-    public String getDesc() {
-        return desc;
+    public String getDescs() {
+        return descs;
     }
 
     /**
-     * @param desc
+     * @param descs
      */
-    public void setDesc(String desc) {
-        this.desc = desc;
+    public void setDescs(String descs) {
+        this.descs = descs;
     }
 
     /**
@@ -251,10 +251,18 @@ public class TbDecisionResDetail {
 
         this.code = decisionResDetailDTO.getCode();
 
-        this.desc = decisionResDetailDTO.getDesc();
+        this.descs = decisionResDetailDTO.getDesc();
 
         this.resscore = decisionResDetailDTO.getResScore();
 
         this.strategies = decisionResDetailDTO.getStrategies().toString();
+    }
+
+
+    public TbDecisionResDetail(Long order_id, String decisionNo, String transId, String orderstatus) {
+        this.setOrder_id(order_id);
+        this.setDecisionNo(decisionNo);
+        this.setTransId(transId);
+        this.setOrderstatus(orderstatus);
     }
 }

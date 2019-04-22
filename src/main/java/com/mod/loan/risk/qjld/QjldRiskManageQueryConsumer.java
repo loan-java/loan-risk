@@ -70,7 +70,7 @@ public class QjldRiskManageQueryConsumer {
             log.info("风控订单，订单已完成风控查询，message={}", JSON.toJSONString(qjldOrderIdMessage));
             return;
         }
-        DecisionResDetailDTO decisionResDetailDTO = qjldPolicyService.QjldPolicQuery(qjldOrderIdMessage.getTrans_id());
+        DecisionResDetailDTO decisionResDetailDTO = qjldPolicyService.QjldPolicQuery(qjldOrderIdMessage.getTransId());
         if (decisionResDetailDTO == null) {
             qjldOrderIdMessage.setTimes(qjldOrderIdMessage.getTimes() + 1);
             if (qjldOrderIdMessage.getTimes() < 6) {
