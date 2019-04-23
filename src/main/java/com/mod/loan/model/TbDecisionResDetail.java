@@ -5,6 +5,8 @@ import com.mod.loan.model.DTO.DecisionResDetailDTO;
 import javax.persistence.*;
 import java.util.Date;
 
+import static javax.persistence.FetchType.LAZY;
+
 @Table(name = "tb_decision_res_detail")
 public class TbDecisionResDetail {
     @Id
@@ -29,6 +31,8 @@ public class TbDecisionResDetail {
     @Column(name = "fee")
     private Boolean fee;
 
+    @Lob
+    @Basic(fetch = LAZY)
     @Column(name = "custom_grade")
     private String customGrade;
 
@@ -41,6 +45,8 @@ public class TbDecisionResDetail {
     @Column(name = "resScore")
     private Double resscore;
 
+    @Lob
+    @Basic(fetch = LAZY)
     @Column(name = "strategies")
     private String strategies;
 

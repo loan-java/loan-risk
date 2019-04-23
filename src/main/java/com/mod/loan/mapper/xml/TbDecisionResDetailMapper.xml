@@ -30,7 +30,7 @@
     code =#{code},
     descs =#{descs},
     resScore =#{resscore},
-    createTime =#{createtime},
+    strategies=#{strategies},
     updateTime = now()
     where trans_id =#{transId}
     </update>

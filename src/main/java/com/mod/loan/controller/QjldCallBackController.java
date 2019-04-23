@@ -55,6 +55,8 @@ public class QjldCallBackController {
             return ConstantUtils.FAIL;
         }
         if (tbDecisionResDetail != null) {
+            TbDecisionResDetail updateDetail = new TbDecisionResDetail(decisionResDetailDTO);
+            decisionResDetailService.updateByTransId(updateDetail);
             if (PolicyResultEnum.AGREE.getCode().equals(decisionResDetailDTO.getCode())) {
                 order.setStatus(ConstantUtils.agreeOrderStatus);
                 orderService.updateOrderByRisk(order);
