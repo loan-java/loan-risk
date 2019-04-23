@@ -238,24 +238,16 @@ public class TbDecisionResDetail {
 
     public TbDecisionResDetail(DecisionResDetailDTO decisionResDetailDTO) {
         this.decisionNo = decisionResDetailDTO.getDecision_no();
-
         this.transId = decisionResDetailDTO.getTrans_id();
-
         this.orderstatus = decisionResDetailDTO.getOrderStatus();
-
         this.orderMoney = decisionResDetailDTO.getOrder_money();
-
         this.fee = decisionResDetailDTO.getFee();
-
         this.customGrade = decisionResDetailDTO.getCustom_grade().toString();
-
         this.code = decisionResDetailDTO.getCode();
-
         this.descs = decisionResDetailDTO.getDesc();
-
         this.resscore = decisionResDetailDTO.getResScore();
-
         this.strategies = decisionResDetailDTO.getStrategies().toString();
+        this.setUpdatetime(new Date());
     }
 
 
@@ -264,5 +256,7 @@ public class TbDecisionResDetail {
         this.setDecisionNo(decisionNo);
         this.setTransId(transId);
         this.setOrderstatus(orderstatus);
+        this.setCreatetime(new Date());
+        this.setUpdatetime(new Date());
     }
 }
