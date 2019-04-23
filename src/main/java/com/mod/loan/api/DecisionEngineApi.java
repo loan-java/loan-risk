@@ -1,9 +1,6 @@
 package com.mod.loan.api;
 
-import com.mod.loan.model.DTO.DecisionBaseReqDTO;
-import com.mod.loan.model.DTO.DecisionBaseResDTO;
-import com.mod.loan.model.DTO.DecisionReqDTO;
-import com.mod.loan.model.DTO.EngineResult;
+import com.mod.loan.model.DTO.*;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.POST;
@@ -38,6 +35,6 @@ public interface DecisionEngineApi {
 
 
     @POST("/credit-decision-engine/decision/queryExecute")
-    Call<EngineResult<DecisionBaseResDTO>> queryDecision(@Body DecisionReqDTO reqDTO);
+    Call<EngineResult<DecisionResDetailDTO>> queryDecision(@Body DecisionReqDTO reqDTO);
 
 }

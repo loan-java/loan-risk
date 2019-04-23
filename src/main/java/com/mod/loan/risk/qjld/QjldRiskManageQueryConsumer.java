@@ -2,12 +2,13 @@ package com.mod.loan.risk.qjld;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.mod.loan.common.enums.OrderStatusEnum;
+import com.mod.loan.common.enums.PolicyResultEnum;
 import com.mod.loan.common.message.OrderPayMessage;
 import com.mod.loan.common.message.QjldOrderIdMessage;
 import com.mod.loan.config.qjld.QjldConfig;
 import com.mod.loan.config.rabbitmq.RabbitConst;
 import com.mod.loan.config.redis.RedisMapper;
-import com.mod.loan.enums.PolicyResultEnum;
 import com.mod.loan.model.DTO.DecisionResDetailDTO;
 import com.mod.loan.model.Order;
 import com.mod.loan.model.TbDecisionResDetail;
@@ -72,7 +73,7 @@ public class QjldRiskManageQueryConsumer {
         }
         try {
             DecisionResDetailDTO decisionResDetailDTO = qjldPolicyService.QjldPolicQuery(qjldOrderIdMessage.getTransId());
-            if (decisionResDetailDTO == null) {
+            if (decisionResDetailDTO == null || OrderStatusEnum.INIT.getCode().equals(decisionResDetailDTO.getOrderStatus()) || OrderStatusEnum.WAIT.getCode().equals(decisionResDetailDTO.getOrderStatus())) {
                 qjldOrderIdMessage.setTimes(qjldOrderIdMessage.getTimes() + 1);
                 if (qjldOrderIdMessage.getTimes() < 6) {
                     rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_query_wait, qjldOrderIdMessage);

@@ -77,13 +77,9 @@ public class QjldPolicyServiceImpl implements QjldPolicyService {
         reqDTO.setMember_id(qjldConfig.getQjldMemberId());
         reqDTO.setTrans_id(transId);
         reqDTO.setNeed_details(ConstantUtils.Y_FLAG);
-        DecisionBaseResDTO decision = decisionHelper.queryDecision(reqDTO);
-        DecisionResDetailDTO decisionResDetailDTO = new DecisionResDetailDTO();
-        if (decision.getDataContent() != null) {
-            decisionResDetailDTO = decision.getDataContent();
-        }
-        log.info("决策执行完成,响应信息:{}", decisionResDetailDTO);
-        return decisionResDetailDTO;
+        DecisionResDetailDTO decision = decisionHelper.queryDecision(reqDTO);
+        log.info("决策执行完成,响应信息:{}", decision);
+        return decision;
     }
 
 

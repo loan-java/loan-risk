@@ -2,10 +2,7 @@ package com.mod.loan;
 
 import com.mod.loan.api.DecisionEngineApi;
 import com.mod.loan.config.qjld.QjldConfig;
-import com.mod.loan.model.DTO.DecisionBaseReqDTO;
-import com.mod.loan.model.DTO.DecisionBaseResDTO;
-import com.mod.loan.model.DTO.DecisionReqDTO;
-import com.mod.loan.model.DTO.EngineResult;
+import com.mod.loan.model.DTO.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -77,11 +74,11 @@ public class DecisionHelper {
         return null;
     }
 
-    public DecisionBaseResDTO queryDecision(DecisionReqDTO reqDTO) {
+    public DecisionResDetailDTO queryDecision(DecisionReqDTO reqDTO) {
         try {
             log.info("开始执行订单请求:{}", reqDTO);
-            Call<EngineResult<DecisionBaseResDTO>> call = api.queryDecision(reqDTO);
-            EngineResult<DecisionBaseResDTO> result = execute(call);
+            Call<EngineResult<DecisionResDetailDTO>> call = api.queryDecision(reqDTO);
+            EngineResult<DecisionResDetailDTO> result = execute(call);
             log.info("决策请求结果:{}", result);
             return result.getData();
         } catch (Exception e) {

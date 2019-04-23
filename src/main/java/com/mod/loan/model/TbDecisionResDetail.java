@@ -242,11 +242,11 @@ public class TbDecisionResDetail {
         this.orderstatus = decisionResDetailDTO.getOrderStatus();
         this.orderMoney = decisionResDetailDTO.getOrder_money();
         this.fee = decisionResDetailDTO.getFee();
-        this.customGrade = decisionResDetailDTO.getCustom_grade().toString();
+        this.customGrade = decisionResDetailDTO.getCustom_grade() != null ? decisionResDetailDTO.getCustom_grade().toString() : null;
         this.code = decisionResDetailDTO.getCode();
         this.descs = decisionResDetailDTO.getDesc();
         this.resscore = decisionResDetailDTO.getResScore();
-        this.strategies = decisionResDetailDTO.getStrategies().toString();
+        this.strategies = decisionResDetailDTO.getStrategies() != null ? decisionResDetailDTO.getStrategies().toString() : null;
         this.setUpdatetime(new Date());
     }
 

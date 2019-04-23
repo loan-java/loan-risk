@@ -1,9 +1,8 @@
 package com.mod.loan.controller;
 
+import com.mod.loan.common.enums.PolicyResultEnum;
 import com.mod.loan.common.message.OrderPayMessage;
 import com.mod.loan.config.rabbitmq.RabbitConst;
-import com.mod.loan.enums.PolicyResultEnum;
-import com.mod.loan.model.DTO.DecisionBaseResDTO;
 import com.mod.loan.model.DTO.DecisionResDetailDTO;
 import com.mod.loan.model.DTO.EngineResult;
 import com.mod.loan.model.DTO.ManualAuditDTO;
@@ -38,12 +37,12 @@ public class QjldCallBackController {
 
 
     @RequestMapping(value = "/policyCallBack", method = RequestMethod.POST)
-    public String QjldPolicyCallBack(@RequestBody EngineResult<DecisionBaseResDTO> engineResult) {
+    public String QjldPolicyCallBack(@RequestBody EngineResult<DecisionResDetailDTO> engineResult) {
         log.info(engineResult.getData().toString());
         if (engineResult == null || engineResult.getData() == null) {
             return ConstantUtils.FAIL;
         }
-        DecisionResDetailDTO decisionResDetailDTO = engineResult.getData().getDataContent();
+        DecisionResDetailDTO decisionResDetailDTO = engineResult.getData();
         TbDecisionResDetail tbDecisionResDetail = decisionResDetailService.selectByTransId(decisionResDetailDTO.getTrans_id());
         Order order = orderService.selectByPrimaryKey(tbDecisionResDetail.getOrder_id());
         if (order == null) {
@@ -51,7 +50,7 @@ public class QjldCallBackController {
             return ConstantUtils.FAIL;
 
         }
-        if (order.getStatus() != ConstantUtils.newOrderStatus) { // 没有完成订单才能进入风控查询模块
+        if (order.getStatus() != ConstantUtils.newOrderStatus) { // 新建订单才能进入风控查询模块
             log.info("风控订单，订单状态异常");
             return ConstantUtils.FAIL;
         }
@@ -67,7 +66,6 @@ public class QjldCallBackController {
                 order.setStatus(ConstantUtils.rejectOrderStatus);
                 orderService.updateOrderByRisk(order);
             }
-
             return ConstantUtils.OK;
         }
         return ConstantUtils.FAIL;

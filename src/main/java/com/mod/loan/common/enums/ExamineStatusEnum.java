@@ -1,4 +1,4 @@
-package com.mod.loan.enums;
+package com.mod.loan.common.enums;
 
 /**
  * loan-pay 2019/4/22 huijin.shuailijie Init
