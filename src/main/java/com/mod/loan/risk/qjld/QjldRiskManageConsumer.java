@@ -11,6 +11,7 @@ import com.mod.loan.config.redis.RedisMapper;
 import com.mod.loan.model.DTO.DecisionResDetailDTO;
 import com.mod.loan.model.*;
 import com.mod.loan.service.*;
+import com.mod.loan.util.ConstantUtils;
 import com.mod.loan.util.TimeUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -65,16 +66,17 @@ public class QjldRiskManageConsumer {
             log.error("风控查询消息重复，message={}", JSON.toJSONString(riskAuditMessage));
             return;
         }
+
+        Order order = orderService.selectByPrimaryKey(riskAuditMessage.getOrderId());
+        if (order == null) {
+            log.info("风控查询，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
+            return;
+        }
+        if (order.getStatus() != 11) { // 新建的订单才能进入风控模块
+            log.info("风控查询，无效的订单状态 message={}", JSON.toJSONString(riskAuditMessage));
+            return;
+        }
         try {
-            Order order = orderService.selectByPrimaryKey(riskAuditMessage.getOrderId());
-            if (order == null) {
-                log.info("风控查询，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
-                return;
-            }
-            if (order.getStatus() != 11) { // 新建的订单才能进入风控模块
-                log.info("风控查询，无效的订单状态 message={}", JSON.toJSONString(riskAuditMessage));
-                return;
-            }
             Merchant merchant = merchantService.findMerchantByAlias(order.getMerchant());
             UserBank userBank = userBankService.selectUserCurrentBankCard(order.getUid());
             User user = userService.selectByPrimaryKey(order.getUid());
@@ -87,7 +89,11 @@ public class QjldRiskManageConsumer {
             }
             rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_query_wait, new QjldOrderIdMessage(decisionResDetailDTO.getTrans_id(), riskAuditMessage.getOrderId()));
         } catch (Exception e) {
-            log.error("风控订单,异常{}", JSON.toJSONString(e));
+            //风控异常进入人工审核
+            log.error("风控订单异常{}", JSON.toJSONString(riskAuditMessage));
+            log.error("风控订单异常", e);
+            order.setStatus(ConstantUtils.unsettledOrderStatus);
+            orderService.updateOrderByRisk(order);
         }
     }
 
