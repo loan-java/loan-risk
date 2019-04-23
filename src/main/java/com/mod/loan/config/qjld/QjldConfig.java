@@ -28,6 +28,10 @@ public class QjldConfig {
     @Value("${qjld.policy.url}")
     private String qjldPolicyUrl;
 
+
+    @Value("${qjld.callback.url}")
+    private String qjldCallBackUrl;
+
     @Value("${qjld.type}")
     private String qjldType;
 
@@ -98,5 +102,13 @@ public class QjldConfig {
 
     public void setQjldType(String qjldType) {
         this.qjldType = qjldType;
+    }
+
+    public String getQjldCallBackUrl() {
+        return qjldCallBackUrl;
+    }
+
+    public void setQjldCallBackUrl(String qjldCallBackUrl) {
+        this.qjldCallBackUrl = qjldCallBackUrl;
     }
 }

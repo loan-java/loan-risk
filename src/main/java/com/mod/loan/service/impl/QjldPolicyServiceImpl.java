@@ -106,6 +106,8 @@ public class QjldPolicyServiceImpl implements QjldPolicyService {
         reqDTO.setNeed_details(ConstantUtils.Y_FLAG);
         //订单号(32位唯一字符串)
         reqDTO.setTrans_id(orderId);
+        //异步查询回调url
+        reqDTO.setNotify_url(qjldConfig.getQjldCallBackUrl());
         //添加自定义标签信息(该信息可以是map也可以是对象只要满足对应的json格式就可以)
         //没有自定义标签的可以不传这个参数
         ObjectMapper objectMapper = new ObjectMapper();

@@ -38,6 +38,7 @@ public class QjldCallBackController {
 
     @RequestMapping(value = "/policyCallBack", method = RequestMethod.POST)
     public String QjldPolicyCallBack(@RequestBody EngineResult<DecisionResDetailDTO> engineResult) {
+        log.info("全景雷达异步查询回调接口");
         log.info(engineResult.getData().toString());
         if (engineResult == null || engineResult.getData() == null) {
             return ConstantUtils.FAIL;
