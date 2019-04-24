@@ -1,7 +1,7 @@
 package com.mod.loan.common.message;
 
 /**
- *通知风控消息模型
+ * 通知风控消息模型
  */
 public class RiskAuditMessage {
 
@@ -18,6 +18,8 @@ public class RiskAuditMessage {
      * 1-返回上次结果 2-重新执行
      */
     private Integer status;
+
+    private int times;// 查询次数
 
     /**
      * 用户uid
@@ -66,5 +68,13 @@ public class RiskAuditMessage {
 
     public void setUserPhone(String userPhone) {
         this.userPhone = userPhone;
+    }
+
+    public int getTimes() {
+        return times;
+    }
+
+    public void setTimes(int times) {
+        this.times = times;
     }
 }

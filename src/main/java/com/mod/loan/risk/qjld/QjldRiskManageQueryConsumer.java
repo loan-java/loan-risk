@@ -96,9 +96,14 @@ public class QjldRiskManageQueryConsumer {
                 orderService.updateOrderByRisk(order);
             }
         } catch (Exception e) {
-            //风控异常进入人工审核
+            //风控异常重新提交订单或者进入人工审核
             log.error("风控订单查询异常{}", JSON.toJSONString(qjldOrderIdMessage));
             log.error("风控订单查询异常{}", e);
+            if (qjldOrderIdMessage.getTimes() < 6) {
+                qjldOrderIdMessage.setTimes(qjldOrderIdMessage.getTimes() + 1);
+                rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_query_wait, qjldOrderIdMessage);
+                return;
+            }
             order.setStatus(ConstantUtils.unsettledOrderStatus);
             orderService.updateOrderByRisk(order);
         }

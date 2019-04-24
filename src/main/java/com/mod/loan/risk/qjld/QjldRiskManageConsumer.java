@@ -89,9 +89,14 @@ public class QjldRiskManageConsumer {
             }
             rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_query_wait, new QjldOrderIdMessage(decisionResDetailDTO.getTrans_id(), riskAuditMessage.getOrderId()));
         } catch (Exception e) {
-            //风控异常进入人工审核
+            //风控异常重新提交订单或者进入人工审核
             log.error("风控订单异常{}", JSON.toJSONString(riskAuditMessage));
             log.error("风控订单异常", e);
+            if (riskAuditMessage.getTimes() < 6) {
+                riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
+                rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_notify, riskAuditMessage);
+                return;
+            }
             order.setStatus(ConstantUtils.unsettledOrderStatus);
             orderService.updateOrderByRisk(order);
         }
