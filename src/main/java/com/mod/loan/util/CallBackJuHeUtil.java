@@ -2,15 +2,13 @@ package com.mod.loan.util;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.mod.loan.util.SignUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author kk
  */
+@Slf4j
 public class CallBackJuHeUtil {
-    private static Logger logger = LoggerFactory.getLogger(CallBackJuHeUtil.class);
 
     public static boolean callBack(String host, JSONObject object) {
         object.put("timeStamp", System.currentTimeMillis() / 1000);
@@ -23,7 +21,7 @@ public class CallBackJuHeUtil {
         if ("200".equals(res.getString("code"))) {
             boolean i = true;
         }
-        System.out.println(response + " === " + res.getString("0"));
+        log.info(response + " === " + res.getString("0"));
         return false;
     }
 
