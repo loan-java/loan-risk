@@ -14,15 +14,15 @@ public class CallBackJuHeUtil {
         object.put("timeStamp", System.currentTimeMillis() / 1000);
         String sign = SignUtil.getSign(object);
         object.put("sign", sign);
-
+        boolean successFlag = false;
         String url = host + "/apiext/orderCallback/orderInfo";
         String response = HttpUtils.restRequest(url, object.toJSONString(), "POST");
         JSONObject res = JSON.parseObject(response);
         if ("200".equals(res.getString("code"))) {
-            boolean i = true;
+            successFlag = true;
         }
         log.info(response + " === " + res.getString("0"));
-        return false;
+        return successFlag;
     }
 
 }
