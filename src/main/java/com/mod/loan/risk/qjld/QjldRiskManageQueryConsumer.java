@@ -57,6 +57,9 @@ public class QjldRiskManageQueryConsumer {
     @Autowired
     private QjldConfig qjldConfig;
 
+    @Autowired
+    private CallBackJuHeService callBackJuHeService;
+
 
     @RabbitListener(queues = "qjld_queue_risk_order_result", containerFactory = "qjld_risk_order_result")
     @RabbitHandler
@@ -94,6 +97,7 @@ public class QjldRiskManageQueryConsumer {
             } else {
                 order.setStatus(ConstantUtils.rejectOrderStatus);
                 orderService.updateOrderByRisk(order);
+                callBackJuHeService.callBack(userService.selectByPrimaryKey(order.getUid()), order.getOrderNo());
             }
         } catch (Exception e) {
             //风控异常重新提交订单或者进入人工审核

@@ -57,17 +57,15 @@ public class QjldRiskManageConsumer {
     @Autowired
     private QjldConfig qjldConfig;
 
-
     @RabbitListener(queues = "qjld_queue_risk_order_notify", containerFactory = "qjld_risk_order_notify")
     @RabbitHandler
     public void risk_order_notify(Message mess) {
         RiskAuditMessage riskAuditMessage = JSONObject.parseObject(mess.getBody(), RiskAuditMessage.class);
+        Order order = orderService.selectByPrimaryKey(riskAuditMessage.getOrderId());
         if (!redisMapper.lock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId(), 30)) {
             log.error("风控查询消息重复，message={}", JSON.toJSONString(riskAuditMessage));
             return;
         }
-
-        Order order = orderService.selectByPrimaryKey(riskAuditMessage.getOrderId());
         if (order == null) {
             log.info("风控查询，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
             return;
