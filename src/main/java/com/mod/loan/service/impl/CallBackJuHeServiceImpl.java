@@ -9,12 +9,14 @@ import com.mod.loan.config.juhe.JuHeConfig;
 import com.mod.loan.model.User;
 import com.mod.loan.service.CallBackJuHeService;
 import com.mod.loan.util.CallBackJuHeUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
  * loan-risk 2019/4/25 huijin.shuailijie Init
  */
+@Slf4j
 @Service
 public class CallBackJuHeServiceImpl implements CallBackJuHeService {
 
@@ -23,6 +25,7 @@ public class CallBackJuHeServiceImpl implements CallBackJuHeService {
 
     @Override
     public void callBack(User user, String orderNo) {
+        log.info("回调订单信息:{}", orderNo);
         JSONObject object = JSONObject.parseObject(user.getCommonInfo());
         object.put("orderNo", orderNo);
         object.put("orderType", OrderTypeEnum.JK.getCode());
