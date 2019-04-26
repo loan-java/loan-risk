@@ -2,6 +2,7 @@ package com.mod.loan.risk.qjld;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.mod.loan.common.enums.JuHeCallBackEnum;
 import com.mod.loan.common.enums.OrderStatusEnum;
 import com.mod.loan.common.enums.PolicyResultEnum;
 import com.mod.loan.common.message.OrderPayMessage;
@@ -97,7 +98,7 @@ public class QjldRiskManageQueryConsumer {
             } else {
                 order.setStatus(ConstantUtils.rejectOrderStatus);
                 orderService.updateOrderByRisk(order);
-                callBackJuHeService.callBack(userService.selectByPrimaryKey(order.getUid()), order.getOrderNo());
+                callBackJuHeService.callBack(userService.selectByPrimaryKey(order.getUid()), order.getOrderNo(), JuHeCallBackEnum.PAY_FAILED);
             }
         } catch (Exception e) {
             //风控异常重新提交订单或者进入人工审核

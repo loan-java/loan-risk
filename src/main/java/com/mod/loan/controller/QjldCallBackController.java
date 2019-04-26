@@ -1,5 +1,6 @@
 package com.mod.loan.controller;
 
+import com.mod.loan.common.enums.JuHeCallBackEnum;
 import com.mod.loan.common.enums.PolicyResultEnum;
 import com.mod.loan.common.message.OrderPayMessage;
 import com.mod.loan.config.rabbitmq.RabbitConst;
@@ -77,7 +78,7 @@ public class QjldCallBackController {
             } else {
                 order.setStatus(ConstantUtils.rejectOrderStatus);
                 orderService.updateOrderByRisk(order);
-                callBackJuHeService.callBack(userService.selectByPrimaryKey(order.getUid()), order.getOrderNo());
+                callBackJuHeService.callBack(userService.selectByPrimaryKey(order.getUid()), order.getOrderNo(), JuHeCallBackEnum.PAY_FAILED);
             }
             return ConstantUtils.OK;
         }

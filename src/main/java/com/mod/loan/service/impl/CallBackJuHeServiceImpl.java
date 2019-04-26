@@ -1,10 +1,7 @@
 package com.mod.loan.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.mod.loan.common.enums.JuHeOrderStatusEnum;
-import com.mod.loan.common.enums.OrderTypeEnum;
-import com.mod.loan.common.enums.PayStatusEnum;
-import com.mod.loan.common.enums.RepayStatusEnum;
+import com.mod.loan.common.enums.JuHeCallBackEnum;
 import com.mod.loan.config.juhe.JuHeConfig;
 import com.mod.loan.model.User;
 import com.mod.loan.service.CallBackJuHeService;
@@ -24,15 +21,16 @@ public class CallBackJuHeServiceImpl implements CallBackJuHeService {
     private JuHeConfig juHeConfig;
 
     @Override
-    public void callBack(User user, String orderNo) {
+    public void callBack(User user, String orderNo, JuHeCallBackEnum juHeCallBackEnum) {
         log.info("回调订单信息:{}", orderNo);
         JSONObject object = JSONObject.parseObject(user.getCommonInfo());
         object.put("orderNo", orderNo);
-        object.put("orderType", OrderTypeEnum.JK.getCode());
         object.put("accountId", user.getId());
-        object.put("orderStatus", JuHeOrderStatusEnum.PAY_FAILED.getCode());
-        object.put("payStatus", PayStatusEnum.NOTPAY.getCode());
-        object.put("repayStatus", RepayStatusEnum.REPAY_FAILED.getCode());
+        object.put("orderType", juHeCallBackEnum.getOrderTypeEnum().getCode());
+        object.put("orderStatus", juHeCallBackEnum.getOrderStatusEnum().getCode());
+        object.put("payStatus", juHeCallBackEnum.getPayStatusEnum().getCode());
+        object.put("repayStatus", juHeCallBackEnum.getRepayStatusEnum().getCode());
+
         CallBackJuHeUtil.callBack(juHeConfig.getJuHeCallBackUrl(), object);
     }
 }
