@@ -20,7 +20,8 @@ public enum JuHeCallBackEnum {
     AUDIT_REFUSE("审核失败", JuHeOrderStatusEnum.AUDIT_REFUSE, OrderTypeEnum.JK, PayStatusEnum.NOTPAY, RepayStatusEnum.NOT_REPAY),
     REPAYING("还款中", JuHeOrderStatusEnum.REPAYING, OrderTypeEnum.HK, PayStatusEnum.NOTPAY, RepayStatusEnum.REPAYING),
     WAIT_PAY("待放款", JuHeOrderStatusEnum.WAIT_PAY, OrderTypeEnum.JK, PayStatusEnum.NOTPAY, RepayStatusEnum.NOT_REPAY),
-    REFUSE_PAY("拒绝放款", JuHeOrderStatusEnum.REFUSE_PAY, OrderTypeEnum.JK, PayStatusEnum.NOTPAY, RepayStatusEnum.NOT_REPAY);
+    REFUSE_PAY("拒绝放款", JuHeOrderStatusEnum.REFUSE_PAY, OrderTypeEnum.JK, PayStatusEnum.NOTPAY, RepayStatusEnum.NOT_REPAY),
+    WITHHOLD("自动扣款", JuHeOrderStatusEnum.REPAYED, OrderTypeEnum.AUTHK, PayStatusEnum.PAYED, RepayStatusEnum.REPAYED);
 
     private String msg;
     private JuHeOrderStatusEnum orderStatusEnum;

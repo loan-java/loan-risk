@@ -8,7 +8,8 @@ public enum OrderTypeEnum {
      * 订单类型
      */
     JK("JK", "订单"),
-    HK("HK", "还款单");
+    HK("HK", "还款单"),
+    AUTHK("AUTHK", "自动代扣");
 
     private String code;
     private String msg;
