@@ -12,6 +12,7 @@ public class CallBackJuHeUtil {
 
     public static boolean callBack(String host, JSONObject object) {
         object.put("timeStamp", System.currentTimeMillis() / 1000);
+        log.info("回调参数", String.valueOf(object));
         String sign = SignUtil.getSign(object);
         object.put("sign", sign);
         boolean successFlag = false;
