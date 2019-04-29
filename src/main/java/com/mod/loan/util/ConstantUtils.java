@@ -11,5 +11,6 @@ public class ConstantUtils {
     public final static Integer agreeOrderStatus = 22;//通过订单
     public final static Integer unsettledOrderStatus = 12;//人工审核订单
     public final static Integer rejectOrderStatus = 51;//拒绝订单
+    public final static String JSON_TYPE = "json";
 
 }

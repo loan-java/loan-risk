@@ -14,6 +14,16 @@ import retrofit2.http.POST;
 public interface DecisionEngineApi {
 
 
+    /**v
+     * 全景雷达(和添)
+     *
+     * @param reqDTO 请求参数
+     * @return 响应结果
+     */
+    @POST("/product/credit/v1/unify")
+    Call<EngineResult<DecisionBaseResDTO>> qjldQuery(@Body QjldHeTianBaseReqDTO reqDTO);
+
+
     /**
      * 同步请求
      *
@@ -31,7 +41,6 @@ public interface DecisionEngineApi {
      */
     @POST("/credit-decision-engine/decision/custom/v3/execute")
     Call<EngineResult<DecisionBaseResDTO>> nosyncDecision(@Body DecisionBaseReqDTO reqDTO);
-
 
 
     @POST("/credit-decision-engine/decision/queryExecute")

@@ -32,6 +32,10 @@ public class QjldConfig {
     @Value("${qjld.callback.url}")
     private String qjldCallBackUrl;
 
+
+    @Value("${qjld.hetian.url}")
+    private String qjldHeTianUrl;
+
     @Value("${qjld.type}")
     private String qjldType;
 
@@ -110,5 +114,13 @@ public class QjldConfig {
 
     public void setQjldCallBackUrl(String qjldCallBackUrl) {
         this.qjldCallBackUrl = qjldCallBackUrl;
+    }
+
+    public String getQjldHeTianUrl() {
+        return qjldHeTianUrl;
+    }
+
+    public void setQjldHeTianUrl(String qjldHeTianUrl) {
+        this.qjldHeTianUrl = qjldHeTianUrl;
     }
 }

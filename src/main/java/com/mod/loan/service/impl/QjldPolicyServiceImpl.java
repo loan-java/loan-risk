@@ -37,14 +37,14 @@ public class QjldPolicyServiceImpl implements QjldPolicyService {
     @Override
     public DecisionResDetailDTO QjldPolicySync(String transId, User user, UserBank userBank) {
         DecisionBaseReqDTO decisionReqDTO = new DecisionBaseReqDTO();
-        decisionReqDTO.setMemberId(qjldConfig.getQjldMemberId());
-        decisionReqDTO.setTerminalId(qjldConfig.getQjldTerminalId());
-        decisionReqDTO.setEncrypt(Boolean.FALSE);
-        decisionReqDTO.setTransId(transId);
+        decisionReqDTO.setMember_id(qjldConfig.getQjldMemberId());
+        decisionReqDTO.setTerminal_id(qjldConfig.getQjldTerminalId());
+        decisionReqDTO.setRes_encrypt(Boolean.FALSE);
+        decisionReqDTO.setTrans_id(transId);
         String dataContent = getDataContent(user, userBank, transId);
-        decisionReqDTO.setDataContent(dataContent);
+        decisionReqDTO.setData_content(dataContent);
         DecisionBaseResDTO decision = decisionHelper.syncDecision(decisionReqDTO);
-        DecisionResDetailDTO decisionResDetailDTO = decision.getDataContent();
+        DecisionResDetailDTO decisionResDetailDTO = decision.getData_content();
         log.info("决策执行完成,响应信息:{}", decisionResDetailDTO);
         return decisionResDetailDTO;
     }
@@ -59,14 +59,14 @@ public class QjldPolicyServiceImpl implements QjldPolicyService {
     @Override
     public DecisionResDetailDTO QjldPolicyNoSync(String transId, User user, UserBank userBank) {
         DecisionBaseReqDTO decisionReqDTO = new DecisionBaseReqDTO();
-        decisionReqDTO.setMemberId(qjldConfig.getQjldMemberId());
-        decisionReqDTO.setTerminalId(qjldConfig.getQjldTerminalId());
-        decisionReqDTO.setEncrypt(Boolean.FALSE);
-        decisionReqDTO.setTransId(transId);
+        decisionReqDTO.setMember_id(qjldConfig.getQjldMemberId());
+        decisionReqDTO.setTerminal_id(qjldConfig.getQjldTerminalId());
+        decisionReqDTO.setRes_encrypt(Boolean.FALSE);
+        decisionReqDTO.setTrans_id(transId);
         String dataContent = getDataContent(user, userBank, transId);
-        decisionReqDTO.setDataContent(dataContent);
+        decisionReqDTO.setData_content(dataContent);
         DecisionBaseResDTO decision = decisionHelper.nosyncDecision(decisionReqDTO);
-        DecisionResDetailDTO decisionResDetailDTO = decision.getDataContent();
+        DecisionResDetailDTO decisionResDetailDTO = decision.getData_content();
         log.info("决策执行完成,响应信息:{}", decisionResDetailDTO);
         return decisionResDetailDTO;
     }

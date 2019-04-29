@@ -24,6 +24,8 @@ public class DecisionReqDTO implements Serializable {
     /**
      * 商户号
      */
+    @NotBlank(message = "商户号不能为空")
+    @JsonProperty("member_id")
     private String member_id;
     /**
      * 决策代码

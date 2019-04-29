@@ -22,5 +22,5 @@ public class DecisionBaseResDTO implements Serializable {
     @JsonProperty("encrypt")
     private Boolean encrypt;
     @JsonProperty("data_content")
-    private DecisionResDetailDTO dataContent;
+    private DecisionResDetailDTO data_content;
 }
