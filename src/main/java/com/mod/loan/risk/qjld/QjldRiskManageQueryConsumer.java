@@ -76,7 +76,7 @@ public class QjldRiskManageQueryConsumer {
             return;
         }
         try {
-            DecisionResDetailDTO decisionResDetailDTO = qjldPolicyService.QjldPolicQuery(qjldOrderIdMessage.getTransId());
+            DecisionResDetailDTO decisionResDetailDTO = qjldPolicyService.qjldPolicQuery(qjldOrderIdMessage.getTransId());
             if (decisionResDetailDTO == null || OrderStatusEnum.INIT.getCode().equals(decisionResDetailDTO.getOrderStatus()) || OrderStatusEnum.WAIT.getCode().equals(decisionResDetailDTO.getOrderStatus())) {
                 qjldOrderIdMessage.setTimes(qjldOrderIdMessage.getTimes() + 1);
                 if (qjldOrderIdMessage.getTimes() < 6) {

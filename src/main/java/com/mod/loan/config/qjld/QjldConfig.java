@@ -40,6 +40,10 @@ public class QjldConfig {
     private String qjldType;
 
 
+    @Value("${qjld.product.type}")
+    private String qjldProductType;
+
+
     @Value("${qjld.version}")
     private String qjldVersion;
 
@@ -122,5 +126,13 @@ public class QjldConfig {
 
     public void setQjldHeTianUrl(String qjldHeTianUrl) {
         this.qjldHeTianUrl = qjldHeTianUrl;
+    }
+
+    public String getQjldProductType() {
+        return qjldProductType;
+    }
+
+    public void setQjldProductType(String qjldProductType) {
+        this.qjldProductType = qjldProductType;
     }
 }

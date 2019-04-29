@@ -35,7 +35,7 @@ public class QjldPolicyServiceImpl implements QjldPolicyService {
      * @Date: 2019/4/22
      */
     @Override
-    public DecisionResDetailDTO QjldPolicySync(String transId, User user, UserBank userBank) {
+    public DecisionResDetailDTO qjldPolicySync(String transId, User user, UserBank userBank) {
         DecisionBaseReqDTO decisionReqDTO = new DecisionBaseReqDTO();
         decisionReqDTO.setMember_id(qjldConfig.getQjldMemberId());
         decisionReqDTO.setTerminal_id(qjldConfig.getQjldTerminalId());
@@ -57,7 +57,7 @@ public class QjldPolicyServiceImpl implements QjldPolicyService {
      * @Date: 2019/4/22
      */
     @Override
-    public DecisionResDetailDTO QjldPolicyNoSync(String transId, User user, UserBank userBank) {
+    public DecisionResDetailDTO qjldPolicyNoSync(String transId, User user, UserBank userBank) {
         DecisionBaseReqDTO decisionReqDTO = new DecisionBaseReqDTO();
         decisionReqDTO.setMember_id(qjldConfig.getQjldMemberId());
         decisionReqDTO.setTerminal_id(qjldConfig.getQjldTerminalId());
@@ -72,7 +72,7 @@ public class QjldPolicyServiceImpl implements QjldPolicyService {
     }
 
     @Override
-    public DecisionResDetailDTO QjldPolicQuery(String transId) {
+    public DecisionResDetailDTO qjldPolicQuery(String transId) {
         DecisionReqDTO reqDTO = new DecisionReqDTO();
         reqDTO.setMember_id(qjldConfig.getQjldMemberId());
         reqDTO.setTrans_id(transId);

@@ -80,7 +80,7 @@ public class QjldRiskManageConsumer {
             User user = userService.selectByPrimaryKey(order.getUid());
             String serials_no = String.format("%s%s%s", "p", new DateTime().toString(TimeUtils.dateformat5),
                     user.getId());
-            DecisionResDetailDTO decisionResDetailDTO = qjldPolicyService.QjldPolicyNoSync(serials_no, user, userBank);
+            DecisionResDetailDTO decisionResDetailDTO = qjldPolicyService.qjldPolicyNoSync(serials_no, user, userBank);
             if (decisionResDetailDTO != null) {
                 TbDecisionResDetail tbDecisionResDetail = new TbDecisionResDetail(riskAuditMessage.getOrderId(), decisionResDetailDTO.getDecision_no(), decisionResDetailDTO.getTrans_id(), decisionResDetailDTO.getOrderStatus());
                 decisionResDetailService.insert(tbDecisionResDetail);

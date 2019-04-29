@@ -9,11 +9,11 @@ import com.mod.loan.model.UserBank;
  */
 public interface QjldPolicyService {
 
-    DecisionResDetailDTO QjldPolicySync(String transId, User user, UserBank userBank);
+    DecisionResDetailDTO qjldPolicySync(String transId, User user, UserBank userBank);
 
 
-    DecisionResDetailDTO QjldPolicyNoSync(String transId, User user, UserBank userBank);
+    DecisionResDetailDTO qjldPolicyNoSync(String transId, User user, UserBank userBank);
 
 
-    DecisionResDetailDTO QjldPolicQuery(String transId);
+    DecisionResDetailDTO qjldPolicQuery(String transId);
 }
