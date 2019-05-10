@@ -47,6 +47,13 @@ public class QjldConfig {
     @Value("${qjld.version}")
     private String qjldVersion;
 
+    @Value("${pay.type}")
+    private String payType;
+
+    public String getPayType() { return payType; }
+
+    public void setPayType(String payType) { this.payType = payType; }
+
     public String getQjldMemberId() {
         return qjldMemberId;
     }

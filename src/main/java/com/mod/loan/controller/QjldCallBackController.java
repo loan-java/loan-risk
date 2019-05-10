@@ -3,6 +3,7 @@ package com.mod.loan.controller;
 import com.mod.loan.common.enums.JuHeCallBackEnum;
 import com.mod.loan.common.enums.PolicyResultEnum;
 import com.mod.loan.common.message.OrderPayMessage;
+import com.mod.loan.config.qjld.QjldConfig;
 import com.mod.loan.config.rabbitmq.RabbitConst;
 import com.mod.loan.model.DTO.DecisionResDetailDTO;
 import com.mod.loan.model.DTO.EngineResult;
@@ -41,6 +42,8 @@ public class QjldCallBackController {
     @Autowired
     private CallBackJuHeService callBackJuHeService;
 
+    @Autowired
+    private QjldConfig qjldConfig;
 
     @Autowired
     private UserService userService;
@@ -71,7 +74,16 @@ public class QjldCallBackController {
             if (PolicyResultEnum.AGREE.getCode().equals(decisionResDetailDTO.getCode())) {
                 order.setStatus(ConstantUtils.agreeOrderStatus);
                 orderService.updateOrderByRisk(order);
-                rabbitTemplate.convertAndSend(RabbitConst.kuaiqian_queue_order_pay, new OrderPayMessage(order.getId()));
+                //支付类型为空的时候默认块钱的
+                if(qjldConfig.getPayType() == null) {
+                    rabbitTemplate.convertAndSend(RabbitConst.kuaiqian_queue_order_pay, new OrderPayMessage(order.getId()));
+                }else {
+                    if(qjldConfig.getPayType().equals("baofoo")) {
+                        rabbitTemplate.convertAndSend(RabbitConst.baofoo_queue_order_pay, new OrderPayMessage(order.getId()));
+                    }else if(qjldConfig.getPayType().equals("kuaiqian")) {
+                        rabbitTemplate.convertAndSend(RabbitConst.kuaiqian_queue_order_pay, new OrderPayMessage(order.getId()));
+                    }
+                }
             } else if (PolicyResultEnum.UNSETTLED.getCode().equals(decisionResDetailDTO.getCode())) {
                 order.setStatus(ConstantUtils.unsettledOrderStatus);
                 orderService.updateOrderByRisk(order);
@@ -88,6 +100,13 @@ public class QjldCallBackController {
     @RequestMapping(value = "/manualAuditCallBack", method = RequestMethod.POST)
     public String QjldManualAuditCallBack(@RequestBody ManualAuditDTO manualAuditDTO) {
         System.out.println(manualAuditDTO.toString());
+        return ConstantUtils.OK;
+    }
+
+    //测试配置文件参数是否生效
+    @RequestMapping(value = "/testPayType")
+    public String testPayType() {
+        System.out.println(qjldConfig.getPayType());
         return ConstantUtils.OK;
     }
 

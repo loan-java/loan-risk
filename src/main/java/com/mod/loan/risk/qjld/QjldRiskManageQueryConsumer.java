@@ -91,7 +91,16 @@ public class QjldRiskManageQueryConsumer {
             if (PolicyResultEnum.AGREE.getCode().equals(decisionResDetailDTO.getCode())) {
                 order.setStatus(ConstantUtils.agreeOrderStatus);
                 orderService.updateOrderByRisk(order);
-                rabbitTemplate.convertAndSend(RabbitConst.kuaiqian_queue_order_pay, new OrderPayMessage(order.getId()));
+                //支付类型为空的时候默认块钱的
+                if(qjldConfig.getPayType() == null) {
+                    rabbitTemplate.convertAndSend(RabbitConst.kuaiqian_queue_order_pay, new OrderPayMessage(order.getId()));
+                }else {
+                    if(qjldConfig.getPayType().equals("baofoo")) {
+                        rabbitTemplate.convertAndSend(RabbitConst.baofoo_queue_order_pay, new OrderPayMessage(order.getId()));
+                    }else if(qjldConfig.getPayType().equals("kuaiqian")) {
+                        rabbitTemplate.convertAndSend(RabbitConst.kuaiqian_queue_order_pay, new OrderPayMessage(order.getId()));
+                    }
+                }
             } else if (PolicyResultEnum.UNSETTLED.getCode().equals(decisionResDetailDTO.getCode())) {
                 order.setStatus(ConstantUtils.unsettledOrderStatus);
                 orderService.updateOrderByRisk(order);
