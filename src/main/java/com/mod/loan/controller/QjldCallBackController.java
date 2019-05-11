@@ -52,7 +52,8 @@ public class QjldCallBackController {
     @RequestMapping(value = "/policyCallBack", method = RequestMethod.POST)
     public String QjldPolicyCallBack(@RequestBody EngineResult<DecisionResDetailDTO> engineResult) {
         log.info("全景雷达异步查询回调接口");
-        log.info(engineResult.getData().toString());
+        log.info("data数据："+ engineResult.getData().toString());
+        log.info("============================================================");
         if (engineResult == null || engineResult.getData() == null) {
             return ConstantUtils.FAIL;
         }
@@ -92,8 +93,10 @@ public class QjldCallBackController {
                 orderService.updateOrderByRisk(order);
                 callBackJuHeService.callBack(userService.selectByPrimaryKey(order.getUid()), order.getOrderNo(), JuHeCallBackEnum.PAY_FAILED);
             }
+            log.info("全景雷达异步查询回调接口：成功结束");
             return ConstantUtils.OK;
         }
+        log.info("全景雷达异步查询回调接口：失败结束");
         return ConstantUtils.FAIL;
     }
 

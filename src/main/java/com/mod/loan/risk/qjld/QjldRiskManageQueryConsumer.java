@@ -67,6 +67,7 @@ public class QjldRiskManageQueryConsumer {
     public void risk_order_notify(Message mess) {
         QjldOrderIdMessage qjldOrderIdMessage = JSONObject.parseObject(mess.getBody(), QjldOrderIdMessage.class);
         log.info("分控订单,[result]：" + qjldOrderIdMessage.toString());
+        log.info("============================================================");
         Order order = orderService.selectByPrimaryKey(qjldOrderIdMessage.getOrderId());
         if (order == null) {
             log.info("风控订单，订单不存在 message={}", JSON.toJSONString(qjldOrderIdMessage));
@@ -110,6 +111,7 @@ public class QjldRiskManageQueryConsumer {
                 orderService.updateOrderByRisk(order);
                 callBackJuHeService.callBack(userService.selectByPrimaryKey(order.getUid()), order.getOrderNo(), JuHeCallBackEnum.PAY_FAILED);
             }
+            log.info("分控订单,[result]：结束" );
         } catch (Exception e) {
             //风控异常重新提交订单或者进入人工审核
             log.error("风控订单查询异常{}", JSON.toJSONString(qjldOrderIdMessage));

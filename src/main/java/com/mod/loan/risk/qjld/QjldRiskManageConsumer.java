@@ -62,6 +62,7 @@ public class QjldRiskManageConsumer {
     public void risk_order_notify(Message mess) {
         RiskAuditMessage riskAuditMessage = JSONObject.parseObject(mess.getBody(), RiskAuditMessage.class);
         log.info("分控订单,[notify]：" + riskAuditMessage.toString());
+        log.info("============================================================");
         Order order = orderService.selectByPrimaryKey(riskAuditMessage.getOrderId());
         if (!redisMapper.lock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId(), 30)) {
             log.error("风控查询消息重复，message={}", JSON.toJSONString(riskAuditMessage));
@@ -86,8 +87,8 @@ public class QjldRiskManageConsumer {
                 TbDecisionResDetail tbDecisionResDetail = new TbDecisionResDetail(riskAuditMessage.getOrderId(), decisionResDetailDTO.getDecision_no(), decisionResDetailDTO.getTrans_id(), decisionResDetailDTO.getOrderStatus());
                 decisionResDetailService.insert(tbDecisionResDetail);
             }
-            log.info("==============风控订单开始进入-全景雷达风控订单结果等待10s========================");
             rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_query_wait, new QjldOrderIdMessage(decisionResDetailDTO.getTrans_id(), riskAuditMessage.getOrderId()));
+            log.info("分控订单,[notify]：结束");
         } catch (Exception e) {
             //风控异常重新提交订单或者进入人工审核
             log.error("风控订单异常{}", JSON.toJSONString(riskAuditMessage));
