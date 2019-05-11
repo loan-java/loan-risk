@@ -77,4 +77,16 @@ public class RiskAuditMessage {
     public void setTimes(int times) {
         this.times = times;
     }
+
+    @Override
+    public String toString() {
+        return "RiskAuditMessage{" +
+                "orderId=" + orderId +
+                ", merchant='" + merchant + '\'' +
+                ", status=" + status +
+                ", times=" + times +
+                ", uid=" + uid +
+                ", userPhone='" + userPhone + '\'' +
+                '}';
+    }
 }

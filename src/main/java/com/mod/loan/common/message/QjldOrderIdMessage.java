@@ -51,4 +51,13 @@ public class QjldOrderIdMessage {
     public void setTransId(String transId) {
         this.transId = transId;
     }
+
+    @Override
+    public String toString() {
+        return "QjldOrderIdMessage{" +
+                "transId='" + transId + '\'' +
+                ", orderId=" + orderId +
+                ", times=" + times +
+                '}';
+    }
 }
