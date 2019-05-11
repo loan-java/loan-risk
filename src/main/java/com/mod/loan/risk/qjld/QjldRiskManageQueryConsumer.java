@@ -96,14 +96,12 @@ public class QjldRiskManageQueryConsumer {
                 //支付类型为空的时候默认块钱的
                 log.info("放款类型：" + qjldConfig.getPayType());
                 log.info("============================================================");
-                if(qjldConfig.getPayType() == null) {
+                if(qjldConfig.getPayType().equals("baofoo")) {
+                    rabbitTemplate.convertAndSend(RabbitConst.baofoo_queue_order_pay, new OrderPayMessage(order.getId()));
+                }else if(qjldConfig.getPayType().equals("kuaiqian")) {
                     rabbitTemplate.convertAndSend(RabbitConst.kuaiqian_queue_order_pay, new OrderPayMessage(order.getId()));
-                }else {
-                    if(qjldConfig.getPayType().equals("baofoo")) {
-                        rabbitTemplate.convertAndSend(RabbitConst.baofoo_queue_order_pay, new OrderPayMessage(order.getId()));
-                    }else if(qjldConfig.getPayType().equals("kuaiqian")) {
-                        rabbitTemplate.convertAndSend(RabbitConst.kuaiqian_queue_order_pay, new OrderPayMessage(order.getId()));
-                    }
+                }else{
+                    return;
                 }
             } else if (PolicyResultEnum.UNSETTLED.getCode().equals(decisionResDetailDTO.getCode())) {
                 order.setStatus(ConstantUtils.unsettledOrderStatus);
