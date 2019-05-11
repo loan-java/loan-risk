@@ -76,6 +76,8 @@ public class QjldCallBackController {
                 order.setStatus(ConstantUtils.agreeOrderStatus);
                 orderService.updateOrderByRisk(order);
                 //支付类型为空的时候默认块钱的
+                log.info("放款类型：" + qjldConfig.getPayType());
+                log.info("============================================================");
                 if(qjldConfig.getPayType() == null) {
                     rabbitTemplate.convertAndSend(RabbitConst.kuaiqian_queue_order_pay, new OrderPayMessage(order.getId()));
                 }else {
