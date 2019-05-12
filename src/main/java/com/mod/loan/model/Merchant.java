@@ -75,6 +75,16 @@ public class Merchant {
 	private String fuyou_h5key;
 
 	/**
+	 * 第三方支付类型：baofoo   kuaiqian
+	 */
+	@Column(name = "payment_type")
+	private String paymentType;
+
+	public String getPaymentType() { return paymentType; }
+
+	public void setPaymentType(String paymentType) { this.paymentType = paymentType; }
+
+	/**
 	 * 获取商户别名与app别名一致
 	 *
 	 * @return merchant_alias - 商户别名与app别名一致

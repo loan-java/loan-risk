@@ -1,6 +1,7 @@
 package com.mod.loan.controller;
 
 import com.mod.loan.common.enums.JuHeCallBackEnum;
+import com.mod.loan.common.enums.PaymentTypeEnum;
 import com.mod.loan.common.enums.PolicyResultEnum;
 import com.mod.loan.common.message.OrderPayMessage;
 import com.mod.loan.config.qjld.QjldConfig;
@@ -76,13 +77,13 @@ public class QjldCallBackController {
                 order.setStatus(ConstantUtils.agreeOrderStatus);
                 orderService.updateOrderByRisk(order);
                 //支付类型为空的时候默认块钱的
-                log.info("放款类型：" + qjldConfig.getPayType());
+                log.info("放款类型：" + order.getPaymentType());
                 log.info("============================================================");
-                if(qjldConfig.getPayType().equals("baofoo")) {
+                if(PaymentTypeEnum.BAOFOO.getCode().equals(order.getPaymentType())) {
                     rabbitTemplate.convertAndSend(RabbitConst.baofoo_queue_order_pay, new OrderPayMessage(order.getId()));
-                }else if(qjldConfig.getPayType().equals("kuaiqian")) {
+                }else if(PaymentTypeEnum.KUAIQIAN.getCode().equals(order.getPaymentType())) {
                     rabbitTemplate.convertAndSend(RabbitConst.kuaiqian_queue_order_pay, new OrderPayMessage(order.getId()));
-                } else{
+                }else{
                     return ConstantUtils.FAIL;
                 }
             } else if (PolicyResultEnum.UNSETTLED.getCode().equals(decisionResDetailDTO.getCode())) {
@@ -103,13 +104,6 @@ public class QjldCallBackController {
     @RequestMapping(value = "/manualAuditCallBack", method = RequestMethod.POST)
     public String QjldManualAuditCallBack(@RequestBody ManualAuditDTO manualAuditDTO) {
         System.out.println(manualAuditDTO.toString());
-        return ConstantUtils.OK;
-    }
-
-    //测试配置文件参数是否生效
-    @RequestMapping(value = "/testPayType")
-    public String testPayType() {
-        System.out.println(qjldConfig.getPayType());
         return ConstantUtils.OK;
     }
 
