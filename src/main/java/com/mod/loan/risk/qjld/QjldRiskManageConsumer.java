@@ -78,6 +78,10 @@ public class QjldRiskManageConsumer {
         }
         try {
             Merchant merchant = merchantService.findMerchantByAlias(order.getMerchant());
+            if(merchant == null) {
+                log.info("风控查询，无效的商户 message={}", order.getMerchant());
+                return;
+            }
             UserBank userBank = userBankService.selectUserCurrentBankCard(order.getUid());
             User user = userService.selectByPrimaryKey(order.getUid());
             String serials_no = String.format("%s%s%s", "p", new DateTime().toString(TimeUtils.dateformat5),
