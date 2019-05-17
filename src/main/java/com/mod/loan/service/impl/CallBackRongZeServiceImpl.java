@@ -32,17 +32,17 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
     }
 
     @Override
-    public void pushRiskResult(Order order, DecisionResDetailDTO risk) {
+    public void pushRiskResult(Order order, String riskCode, String riskDesc) {
         try {
             //只推审核通过跟审核拒绝
-            if (PolicyResultEnum.isUnsettled(risk.getCode())) return;
+            if (PolicyResultEnum.isUnsettled(riskCode)) return;
 
             unbindOrderNo(order);
 
             //先推审批结果，再推订单状态，order_status=100（审批通过），order_status=110（审批拒绝）
-            postRiskResult(order, risk);
+            postRiskResult(order, riskCode, riskDesc);
 
-            int orderStatus = PolicyResultEnum.isAgree(risk.getCode()) ? 100 : 110;
+            int orderStatus = PolicyResultEnum.isAgree(riskCode) ? 100 : 110;
 
             Map<String, Object> map = new HashMap<>();
             map.put("order_no", order.getOrderNo());
@@ -54,7 +54,7 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
         }
     }
 
-    private void postRiskResult(Order order, DecisionResDetailDTO risk) throws Exception {
+    private void postRiskResult(Order order, String riskCode, String riskDesc) throws Exception {
         String orderNo = order.getOrderNo();
         String reapply = ""; //是否可再次申请
         String reapplyTime = ""; //可再申请的时间
@@ -65,9 +65,9 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
         long approvalTime = now.getTime(); //审批通过时间
         int conclusion = 10; //通过
 
-        if (!PolicyResultEnum.isAgree(risk.getCode())) {
+        if (!PolicyResultEnum.isAgree(riskCode)) {
             conclusion = 40; //拒绝
-            remark = risk.getDesc();
+            remark = riskDesc;
             reapply = "1";
 
             reapplyTime = DateFormatUtils.format(refuseTime + (1000L * 3600 * 24 * 7), "yyyy-MM-dd");

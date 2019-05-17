@@ -140,7 +140,7 @@ public class QjldRiskManageQueryConsumer {
 
     private void callbackThird(Order order, DecisionResDetailDTO risk) {
         if(OrderSourceEnum.isRongZe(order.getSource())){
-            callBackRongZeService.pushRiskResult(order, risk);
+            callBackRongZeService.pushRiskResult(order, risk.getCode(), risk.getDesc());
         }
     }
 }
