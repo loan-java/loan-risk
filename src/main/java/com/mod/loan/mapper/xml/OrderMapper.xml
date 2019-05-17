@@ -29,6 +29,7 @@
 		<result column="merchant" jdbcType="VARCHAR" property="merchant" />
 		<result column="follow_user_id" jdbcType="BIGINT" property="followUserId" />
 		<result column="payment_type" jdbcType="VARCHAR" property="paymentType"/>
+		<result column="source" jdbcType="INTEGER" property="source"/>
 	</resultMap>
 
 </mapper>

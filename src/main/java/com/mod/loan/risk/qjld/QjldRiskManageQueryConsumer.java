@@ -2,10 +2,7 @@ package com.mod.loan.risk.qjld;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.mod.loan.common.enums.JuHeCallBackEnum;
-import com.mod.loan.common.enums.OrderStatusEnum;
-import com.mod.loan.common.enums.PaymentTypeEnum;
-import com.mod.loan.common.enums.PolicyResultEnum;
+import com.mod.loan.common.enums.*;
 import com.mod.loan.common.message.OrderPayMessage;
 import com.mod.loan.common.message.QjldOrderIdMessage;
 import com.mod.loan.config.qjld.QjldConfig;
@@ -27,6 +24,8 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Resource;
 
 /**
  * loan-pay 2019/4/20 huijin.shuailijie Init
@@ -61,6 +60,8 @@ public class QjldRiskManageQueryConsumer {
 
     @Autowired
     private CallBackJuHeService callBackJuHeService;
+    @Resource
+    private CallBackRongZeService callBackRongZeService;
 
 
     @RabbitListener(queues = "qjld_queue_risk_order_result", containerFactory = "qjld_risk_order_result")
@@ -112,6 +113,7 @@ public class QjldRiskManageQueryConsumer {
                 orderService.updateOrderByRisk(order);
                 callBackJuHeService.callBack(userService.selectByPrimaryKey(order.getUid()), order.getOrderNo(), JuHeCallBackEnum.PAY_FAILED);
             }
+            callbackThird(order, decisionResDetailDTO);
             log.info("分控订单,[result]：结束" );
         } catch (Exception e) {
             //风控异常重新提交订单或者进入人工审核
@@ -134,5 +136,11 @@ public class QjldRiskManageQueryConsumer {
         factory.setPrefetchCount(1);
         factory.setConcurrentConsumers(5);
         return factory;
+    }
+
+    private void callbackThird(Order order, DecisionResDetailDTO risk) {
+        if(OrderSourceEnum.isRongZe(order.getSource())){
+            callBackRongZeService.pushRiskResult(order, risk);
+        }
     }
 }

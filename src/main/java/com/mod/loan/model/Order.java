@@ -155,6 +155,12 @@ public class Order {
     @Column(name = "payment_type")
     private String paymentType;
 
+    /**
+     * 订单来源，0-聚合，1-融泽
+     */
+    @Column(name = "source")
+    private Integer source;
+
     public String getPaymentType() { return paymentType; }
 
     public void setPaymentType(String paymentType) { this.paymentType = paymentType; }
@@ -558,5 +564,13 @@ public class Order {
 
     public void setInterestFee(BigDecimal interestFee) {
         this.interestFee = interestFee;
+    }
+
+    public Integer getSource() {
+        return source;
+    }
+
+    public void setSource(Integer source) {
+        this.source = source;
     }
 }
