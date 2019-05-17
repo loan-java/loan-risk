@@ -19,6 +19,13 @@ public enum PolicyResultEnum {
         this.text = text;
     }
 
+    public static boolean isAgree(String code) {
+        return AGREE.getCode().equals(code);
+    }
+    public static boolean isUnsettled(String code) {
+        return UNSETTLED.getCode().equals(code);
+    }
+
     public String getCode() {
         return code;
     }
