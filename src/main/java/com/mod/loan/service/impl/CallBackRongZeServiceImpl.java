@@ -1,6 +1,7 @@
 package com.mod.loan.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.mod.loan.common.enums.OrderSourceEnum;
 import com.mod.loan.common.enums.PolicyResultEnum;
 import com.mod.loan.config.Constant;
 import com.mod.loan.model.Order;
@@ -30,6 +31,8 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
     public void pushOrderStatus(Order order) {
         try {
             order = checkOrder(order);
+            if (order == null) return;
+
             unbindOrderNo(order);
             postOrderStatus(order);
         } catch (Exception e) {
@@ -44,6 +47,8 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
             if (PolicyResultEnum.isUnsettled(riskCode)) return;
 
             order = checkOrder(order);
+            if (order == null) return;
+
             unbindOrderNo(order);
 
             //先推审批结果，再推订单状态，order_status=100（审批通过），order_status=110（审批拒绝）
@@ -137,6 +142,8 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
         if (StringUtils.isBlank(order.getOrderNo()) && order.getId() != null && order.getId() > 0) {
             order = orderService.selectByPrimaryKey(order.getId());
         }
+        if (order == null) return null;
+        if (!OrderSourceEnum.isRongZe(order.getSource())) return null;
         return order;
     }
 
