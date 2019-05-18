@@ -3,15 +3,17 @@ package com.mod.loan.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.mod.loan.common.enums.PolicyResultEnum;
 import com.mod.loan.config.Constant;
-import com.mod.loan.model.DTO.DecisionResDetailDTO;
 import com.mod.loan.model.Order;
 import com.mod.loan.service.CallBackRongZeService;
+import com.mod.loan.service.OrderService;
 import com.mod.loan.util.rongze.BizDataUtil;
 import com.mod.loan.util.rongze.RongZeRequestUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,9 +23,13 @@ import java.util.Map;
 @Service
 public class CallBackRongZeServiceImpl implements CallBackRongZeService {
 
+    @Resource
+    private OrderService orderService;
+
     @Override
     public void pushOrderStatus(Order order) {
         try {
+            order = checkOrder(order);
             unbindOrderNo(order);
             postOrderStatus(order);
         } catch (Exception e) {
@@ -37,6 +43,7 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
             //只推审核通过跟审核拒绝
             if (PolicyResultEnum.isUnsettled(riskCode)) return;
 
+            order = checkOrder(order);
             unbindOrderNo(order);
 
             //先推审批结果，再推订单状态，order_status=100（审批通过），order_status=110（审批拒绝）
@@ -124,6 +131,13 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
         map.put("remark", "");
         postOrderStatus(map);
         return map;
+    }
+
+    private Order checkOrder(Order order) {
+        if (StringUtils.isBlank(order.getOrderNo()) && order.getId() != null && order.getId() > 0) {
+            order = orderService.selectByPrimaryKey(order.getId());
+        }
+        return order;
     }
 
     private void postOrderStatus(Map<String, Object> map) throws Exception {
