@@ -1,5 +1,7 @@
 package com.mod.loan.util.rongze;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -9,8 +11,9 @@ import java.net.URL;
  * @包名 com.sinaif.common.utils
  * @类名: HttpClientUtils
  * @描述: http client请求工具类 @作者： 李运期 @创建时间： 2016年9月21日 上午10:41:19
- * 
+ *
  */
+@Slf4j
 public class HttpClientUtils {
 
 	/**
@@ -20,7 +23,7 @@ public class HttpClientUtils {
 
 	/**
 	 * 请求网络数据
-	 * 
+	 *
 	 * @param urlAddress
 	 * @param datas
 	 * @return
@@ -44,9 +47,9 @@ public class HttpClientUtils {
 			// 根据ResponseCode判断连接是否成功
 			int responseCode = con.getResponseCode();
 			if (responseCode != 200) {
-				System.out.println("sendPost Error===" + responseCode);
+				log.error("sendPost Error===" + responseCode);
 			} else {
-				System.out.println("sendPost success!" + responseCode);
+				log.error("sendPost success!" + responseCode);
 			}
 
 			result.append(getContent(con.getInputStream(), "UTF-8"));
@@ -66,7 +69,7 @@ public class HttpClientUtils {
 
 	/**
 	 * 获取文件内容
-	 * 
+	 *
 	 * @param in
 	 * @param encode
 	 * @return
