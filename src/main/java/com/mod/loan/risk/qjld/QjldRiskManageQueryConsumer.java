@@ -98,11 +98,11 @@ public class QjldRiskManageQueryConsumer {
                 //支付类型为空的时候默认块钱的
                 log.info("放款类型：" + order.getPaymentType());
                 log.info("============================================================");
-                if(PaymentTypeEnum.BAOFOO.getCode().equals(order.getPaymentType())) {
+                if (PaymentTypeEnum.BAOFOO.getCode().equals(order.getPaymentType())) {
                     rabbitTemplate.convertAndSend(RabbitConst.baofoo_queue_order_pay, new OrderPayMessage(order.getId()));
-                }else if(PaymentTypeEnum.KUAIQIAN.getCode().equals(order.getPaymentType())) {
+                } else if (PaymentTypeEnum.KUAIQIAN.getCode().equals(order.getPaymentType())) {
                     rabbitTemplate.convertAndSend(RabbitConst.kuaiqian_queue_order_pay, new OrderPayMessage(order.getId()));
-                }else{
+                } else {
                     return;
                 }
             } else if (PolicyResultEnum.UNSETTLED.getCode().equals(decisionResDetailDTO.getCode())) {
@@ -113,8 +113,10 @@ public class QjldRiskManageQueryConsumer {
                 orderService.updateOrderByRisk(order);
                 callBackJuHeService.callBack(userService.selectByPrimaryKey(order.getUid()), order.getOrderNo(), JuHeCallBackEnum.PAY_FAILED);
             }
-            callbackThird(order, decisionResDetailDTO);
-            log.info("分控订单,[result]：结束" );
+            if (order.getSource() == ConstantUtils.ONE) {
+                callbackThird(order, decisionResDetailDTO);
+            }
+            log.info("分控订单,[result]：结束");
         } catch (Exception e) {
             //风控异常重新提交订单或者进入人工审核
             log.error("风控订单查询异常{}", JSON.toJSONString(qjldOrderIdMessage));
@@ -139,7 +141,7 @@ public class QjldRiskManageQueryConsumer {
     }
 
     private void callbackThird(Order order, DecisionResDetailDTO risk) {
-        if(OrderSourceEnum.isRongZe(order.getSource())){
+        if (OrderSourceEnum.isRongZe(order.getSource())) {
             callBackRongZeService.pushRiskResult(order, risk.getCode(), risk.getDesc());
         }
     }
