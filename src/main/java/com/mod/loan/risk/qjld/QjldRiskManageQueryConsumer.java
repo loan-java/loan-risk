@@ -2,8 +2,10 @@ package com.mod.loan.risk.qjld;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.mod.loan.common.enums.*;
-import com.mod.loan.common.message.OrderPayMessage;
+import com.mod.loan.common.enums.JuHeCallBackEnum;
+import com.mod.loan.common.enums.OrderSourceEnum;
+import com.mod.loan.common.enums.OrderStatusEnum;
+import com.mod.loan.common.enums.PolicyResultEnum;
 import com.mod.loan.common.message.QjldOrderIdMessage;
 import com.mod.loan.config.qjld.QjldConfig;
 import com.mod.loan.config.rabbitmq.RabbitConst;
@@ -92,19 +94,12 @@ public class QjldRiskManageQueryConsumer {
             }
             TbDecisionResDetail tbDecisionResDetail = new TbDecisionResDetail(decisionResDetailDTO);
             decisionResDetailService.updateByTransId(tbDecisionResDetail);
+            //风控通过全部转为人工审核
             if (PolicyResultEnum.AGREE.getCode().equals(decisionResDetailDTO.getCode())) {
-                order.setStatus(ConstantUtils.agreeOrderStatus);
+                order.setStatus(ConstantUtils.unsettledOrderStatus);
                 orderService.updateOrderByRisk(order);
                 //支付类型为空的时候默认块钱的
                 log.info("放款类型：" + order.getPaymentType());
-                log.info("============================================================");
-                if (PaymentTypeEnum.BAOFOO.getCode().equals(order.getPaymentType())) {
-                    rabbitTemplate.convertAndSend(RabbitConst.baofoo_queue_order_pay, new OrderPayMessage(order.getId()));
-                } else if (PaymentTypeEnum.KUAIQIAN.getCode().equals(order.getPaymentType())) {
-                    rabbitTemplate.convertAndSend(RabbitConst.kuaiqian_queue_order_pay, new OrderPayMessage(order.getId()));
-                } else {
-                    return;
-                }
             } else if (PolicyResultEnum.UNSETTLED.getCode().equals(decisionResDetailDTO.getCode())) {
                 order.setStatus(ConstantUtils.unsettledOrderStatus);
                 orderService.updateOrderByRisk(order);

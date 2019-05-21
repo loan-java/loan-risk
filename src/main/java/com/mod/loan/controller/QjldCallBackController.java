@@ -1,11 +1,8 @@
 package com.mod.loan.controller;
 
 import com.mod.loan.common.enums.JuHeCallBackEnum;
-import com.mod.loan.common.enums.PaymentTypeEnum;
 import com.mod.loan.common.enums.PolicyResultEnum;
-import com.mod.loan.common.message.OrderPayMessage;
 import com.mod.loan.config.qjld.QjldConfig;
-import com.mod.loan.config.rabbitmq.RabbitConst;
 import com.mod.loan.model.DTO.DecisionResDetailDTO;
 import com.mod.loan.model.DTO.EngineResult;
 import com.mod.loan.model.DTO.ManualAuditDTO;
@@ -53,7 +50,7 @@ public class QjldCallBackController {
     @RequestMapping(value = "/policyCallBack", method = RequestMethod.POST)
     public String QjldPolicyCallBack(@RequestBody EngineResult<DecisionResDetailDTO> engineResult) {
         log.info("全景雷达异步查询回调接口");
-        log.info("data数据："+ engineResult.getData().toString());
+        log.info("data数据：" + engineResult.getData().toString());
         log.info("============================================================");
         if (engineResult == null || engineResult.getData() == null) {
             return ConstantUtils.FAIL;
@@ -73,19 +70,12 @@ public class QjldCallBackController {
         if (tbDecisionResDetail != null) {
             TbDecisionResDetail updateDetail = new TbDecisionResDetail(decisionResDetailDTO);
             decisionResDetailService.updateByTransId(updateDetail);
+            //风控通过全部转为人工审核
             if (PolicyResultEnum.AGREE.getCode().equals(decisionResDetailDTO.getCode())) {
-                order.setStatus(ConstantUtils.agreeOrderStatus);
+                order.setStatus(ConstantUtils.unsettledOrderStatus);
                 orderService.updateOrderByRisk(order);
                 //支付类型为空的时候默认块钱的
                 log.info("放款类型：" + order.getPaymentType());
-                log.info("============================================================");
-                if(PaymentTypeEnum.BAOFOO.getCode().equals(order.getPaymentType())) {
-                    rabbitTemplate.convertAndSend(RabbitConst.baofoo_queue_order_pay, new OrderPayMessage(order.getId()));
-                }else if(PaymentTypeEnum.KUAIQIAN.getCode().equals(order.getPaymentType())) {
-                    rabbitTemplate.convertAndSend(RabbitConst.kuaiqian_queue_order_pay, new OrderPayMessage(order.getId()));
-                }else{
-                    return ConstantUtils.FAIL;
-                }
             } else if (PolicyResultEnum.UNSETTLED.getCode().equals(decisionResDetailDTO.getCode())) {
                 order.setStatus(ConstantUtils.unsettledOrderStatus);
                 orderService.updateOrderByRisk(order);
