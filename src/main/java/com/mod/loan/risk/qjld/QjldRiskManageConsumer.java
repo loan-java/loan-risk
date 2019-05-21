@@ -62,7 +62,6 @@ public class QjldRiskManageConsumer {
     public void risk_order_notify(Message mess) {
         RiskAuditMessage riskAuditMessage = JSONObject.parseObject(mess.getBody(), RiskAuditMessage.class);
         log.info("分控订单,[notify]：" + riskAuditMessage.toString());
-        log.info("============================================================");
         Order order = orderService.selectByPrimaryKey(riskAuditMessage.getOrderId());
         if (!redisMapper.lock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId(), 30)) {
             log.error("风控查询消息重复，message={}", JSON.toJSONString(riskAuditMessage));
