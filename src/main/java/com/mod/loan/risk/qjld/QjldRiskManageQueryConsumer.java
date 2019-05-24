@@ -94,19 +94,19 @@ public class QjldRiskManageQueryConsumer {
             TbDecisionResDetail tbDecisionResDetail = new TbDecisionResDetail(decisionResDetailDTO);
             decisionResDetailService.updateByTransId(tbDecisionResDetail);
             //风控通过全部转为人工审核
-            if (PolicyResultEnum.AGREE.getCode().equals(decisionResDetailDTO.getCode())) {
+//            if (PolicyResultEnum.AGREE.getCode().equals(decisionResDetailDTO.getCode())) {
+//                order.setStatus(ConstantUtils.unsettledOrderStatus);
+//                orderService.updateOrderByRisk(order);
+//                //支付类型为空的时候默认块钱的
+//                log.info("放款类型：" + order.getPaymentType());
+//            } else if (PolicyResultEnum.UNSETTLED.getCode().equals(decisionResDetailDTO.getCode())) {
                 order.setStatus(ConstantUtils.unsettledOrderStatus);
                 orderService.updateOrderByRisk(order);
-                //支付类型为空的时候默认块钱的
-                log.info("放款类型：" + order.getPaymentType());
-            } else if (PolicyResultEnum.UNSETTLED.getCode().equals(decisionResDetailDTO.getCode())) {
-                order.setStatus(ConstantUtils.unsettledOrderStatus);
-                orderService.updateOrderByRisk(order);
-            } else {
-                order.setStatus(ConstantUtils.rejectOrderStatus);
-                orderService.updateOrderByRisk(order);
-                callBackJuHeService.callBack(userService.selectByPrimaryKey(order.getUid()), order.getOrderNo(), JuHeCallBackEnum.PAY_FAILED);
-            }
+//            } else {
+//                order.setStatus(ConstantUtils.rejectOrderStatus);
+//                orderService.updateOrderByRisk(order);
+//                callBackJuHeService.callBack(userService.selectByPrimaryKey(order.getUid()), order.getOrderNo(), JuHeCallBackEnum.PAY_FAILED);
+//            }
             if (order.getSource() == ConstantUtils.ONE) {
                 callbackThird(order, decisionResDetailDTO);
             }
