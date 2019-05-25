@@ -14,7 +14,10 @@ public class TbDecisionResDetail {
     private Long id;
 
     @Column(name = "order_id")
-    private Long order_id;
+    private Long orderId;
+
+    @Column(name = "order_no")
+    private String orderNo;
 
     @Column(name = "decision_no")
     private String decisionNo;
@@ -22,7 +25,7 @@ public class TbDecisionResDetail {
     @Column(name = "trans_id")
     private String transId;
 
-    @Column(name = "orderStatus")
+    @Column(name = "order_status")
     private String orderstatus;
 
     @Column(name = "order_money")
@@ -42,7 +45,7 @@ public class TbDecisionResDetail {
     @Column(name = "descs")
     private String descs;
 
-    @Column(name = "resScore")
+    @Column(name = "res_score")
     private Double resscore;
 
     @Lob
@@ -50,10 +53,10 @@ public class TbDecisionResDetail {
     @Column(name = "strategies")
     private String strategies;
 
-    @Column(name = "createTime")
+    @Column(name = "create_time")
     private Date createtime;
 
-    @Column(name = "updateTime")
+    @Column(name = "update_time")
     private Date updatetime;
 
 
@@ -234,13 +237,6 @@ public class TbDecisionResDetail {
         this.id = id;
     }
 
-    public Long getOrder_id() {
-        return order_id;
-    }
-
-    public void setOrder_id(Long order_id) {
-        this.order_id = order_id;
-    }
 
     public TbDecisionResDetail(DecisionResDetailDTO decisionResDetailDTO) {
         this.decisionNo = decisionResDetailDTO.getDecision_no();
@@ -257,12 +253,29 @@ public class TbDecisionResDetail {
     }
 
 
-    public TbDecisionResDetail(Long order_id, String decisionNo, String transId, String orderstatus) {
-        this.setOrder_id(order_id);
+    public TbDecisionResDetail(Long order_id, String orderNo, String decisionNo, String transId, String orderstatus) {
+        this.setOrderId(order_id);
+        this.setDecisionNo(orderNo);
         this.setDecisionNo(decisionNo);
         this.setTransId(transId);
         this.setOrderstatus(orderstatus);
         this.setCreatetime(new Date());
         this.setUpdatetime(new Date());
+    }
+
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
+    }
+
+    public String getOrderNo() {
+        return orderNo;
+    }
+
+    public void setOrderNo(String orderNo) {
+        this.orderNo = orderNo;
     }
 }

@@ -3,7 +3,6 @@ package com.mod.loan.risk.qjld;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.mod.loan.common.enums.JuHeCallBackEnum;
-import com.mod.loan.common.enums.OrderSourceEnum;
 import com.mod.loan.common.enums.OrderStatusEnum;
 import com.mod.loan.common.enums.PolicyResultEnum;
 import com.mod.loan.common.message.QjldOrderIdMessage;
@@ -12,6 +11,7 @@ import com.mod.loan.config.rabbitmq.RabbitConst;
 import com.mod.loan.config.redis.RedisMapper;
 import com.mod.loan.model.DTO.DecisionResDetailDTO;
 import com.mod.loan.model.Order;
+import com.mod.loan.model.OrderUser;
 import com.mod.loan.model.TbDecisionResDetail;
 import com.mod.loan.service.*;
 import com.mod.loan.util.ConstantUtils;
@@ -39,6 +39,10 @@ public class QjldRiskManageQueryConsumer {
 
     @Autowired
     private OrderService orderService;
+
+
+    @Autowired
+    private OrderUserService orderUserService;
 
     @Autowired
     private MerchantService merchantService;
@@ -71,13 +75,26 @@ public class QjldRiskManageQueryConsumer {
     public void risk_order_notify(Message mess) {
         QjldOrderIdMessage qjldOrderIdMessage = JSONObject.parseObject(mess.getBody(), QjldOrderIdMessage.class);
         log.info("分控订单,[result]：" + qjldOrderIdMessage.toString());
-        Order order = orderService.selectByPrimaryKey(qjldOrderIdMessage.getOrderId());
-        if (order == null) {
-            log.info("风控订单，订单不存在 message={}", JSON.toJSONString(qjldOrderIdMessage));
-            return;
-        }
-        if (order.getStatus() != ConstantUtils.newOrderStatus) { // 没有完成订单才能进入风控查询模块
-            log.info("风控订单，订单已完成风控查询，message={}", JSON.toJSONString(qjldOrderIdMessage));
+        Order order = null;
+        OrderUser orderUser = null;
+        if (qjldOrderIdMessage.getSource() == ConstantUtils.ZERO && qjldOrderIdMessage.getOrderId() != null) {
+            order = orderService.selectByPrimaryKey(qjldOrderIdMessage.getOrderId());
+            if (order == null) {
+                log.info("风控查询订单，订单不存在 message={}", JSON.toJSONString(qjldOrderIdMessage));
+                return;
+            }
+            if (order.getStatus() != ConstantUtils.newOrderStatus) { // 没有完成订单才能进入风控查询模块
+                log.info("风控查询订单，订单已完成风控查询，message={}", JSON.toJSONString(qjldOrderIdMessage));
+                return;
+            }
+        } else if (qjldOrderIdMessage.getSource() == ConstantUtils.ONE && qjldOrderIdMessage.getOrderNo() != null) {
+            orderUser = orderUserService.selectByOrderNo(qjldOrderIdMessage.getOrderNo());
+            if (orderUser == null) {
+                log.info("风控查询订单，订单不存在 message={}", JSON.toJSONString(qjldOrderIdMessage));
+                return;
+            }
+        } else {
+            log.error("风控查询消息错误，message={}", JSON.toJSONString(qjldOrderIdMessage));
             return;
         }
         try {
@@ -93,22 +110,23 @@ public class QjldRiskManageQueryConsumer {
             }
             TbDecisionResDetail tbDecisionResDetail = new TbDecisionResDetail(decisionResDetailDTO);
             decisionResDetailService.updateByTransId(tbDecisionResDetail);
-            //风控通过全部转为人工审核
-//            if (PolicyResultEnum.AGREE.getCode().equals(decisionResDetailDTO.getCode())) {
-//                order.setStatus(ConstantUtils.unsettledOrderStatus);
-//                orderService.updateOrderByRisk(order);
-//                //支付类型为空的时候默认块钱的
-//                log.info("放款类型：" + order.getPaymentType());
-//            } else if (PolicyResultEnum.UNSETTLED.getCode().equals(decisionResDetailDTO.getCode())) {
-                order.setStatus(ConstantUtils.unsettledOrderStatus);
-                orderService.updateOrderByRisk(order);
-//            } else {
-//                order.setStatus(ConstantUtils.rejectOrderStatus);
-//                orderService.updateOrderByRisk(order);
-//                callBackJuHeService.callBack(userService.selectByPrimaryKey(order.getUid()), order.getOrderNo(), JuHeCallBackEnum.PAY_FAILED);
-//            }
-            if (order.getSource() == ConstantUtils.ONE) {
-                callbackThird(order, decisionResDetailDTO);
+            //聚合风控通过全部转为人工审核
+            if (qjldOrderIdMessage.getSource() == ConstantUtils.ZERO) {
+                if (PolicyResultEnum.AGREE.getCode().equals(decisionResDetailDTO.getCode())) {
+                    order.setStatus(ConstantUtils.unsettledOrderStatus);
+                    orderService.updateOrderByRisk(order);
+                    //支付类型为空的时候默认块钱的
+                    log.info("放款类型：" + order.getPaymentType());
+                } else if (PolicyResultEnum.UNSETTLED.getCode().equals(decisionResDetailDTO.getCode())) {
+                    order.setStatus(ConstantUtils.unsettledOrderStatus);
+                    orderService.updateOrderByRisk(order);
+                } else {
+                    order.setStatus(ConstantUtils.rejectOrderStatus);
+                    orderService.updateOrderByRisk(order);
+                    callBackJuHeService.callBack(userService.selectByPrimaryKey(order.getUid()), order.getOrderNo(), JuHeCallBackEnum.PAY_FAILED);
+                }
+            } else if (qjldOrderIdMessage.getSource() == ConstantUtils.ONE) {
+                callbackThird(orderUser, decisionResDetailDTO);
             }
             log.info("分控订单,[result]：结束");
         } catch (Exception e) {
@@ -120,8 +138,21 @@ public class QjldRiskManageQueryConsumer {
                 rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_query_wait, qjldOrderIdMessage);
                 return;
             }
-            order.setStatus(ConstantUtils.unsettledOrderStatus);
-            orderService.updateOrderByRisk(order);
+            if (qjldOrderIdMessage.getSource() == ConstantUtils.ZERO) {
+                //聚合风控查询异常直接转入人工审核
+                order.setStatus(ConstantUtils.unsettledOrderStatus);
+                orderService.updateOrderByRisk(order);
+            } else if (qjldOrderIdMessage.getSource() == ConstantUtils.ONE) {
+                //融泽风控查询异常直接返回审批失败 更新风控表
+                DecisionResDetailDTO decisionRes = new DecisionResDetailDTO();
+                decisionRes.setTrans_id(qjldOrderIdMessage.getTransId());
+                decisionRes.setOrderStatus("FAIL");
+                decisionRes.setCode(PolicyResultEnum.REJECT.getCode());
+                decisionRes.setDesc("拒绝");
+                TbDecisionResDetail resDetail = new TbDecisionResDetail(decisionRes);
+                decisionResDetailService.updateByTransId(resDetail);
+                callbackThird(orderUser, decisionRes);
+            }
         }
     }
 
@@ -134,9 +165,7 @@ public class QjldRiskManageQueryConsumer {
         return factory;
     }
 
-    private void callbackThird(Order order, DecisionResDetailDTO risk) {
-        if (OrderSourceEnum.isRongZe(order.getSource())) {
-            callBackRongZeService.pushRiskResult(order, risk.getCode(), risk.getDesc());
-        }
+    private void callbackThird(OrderUser orderUser, DecisionResDetailDTO risk) {
+        callBackRongZeService.pushRiskResult(orderUser, risk.getCode(), risk.getDesc());
     }
 }

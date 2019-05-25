@@ -57,7 +57,7 @@ public class QjldCallBackController {
         }
         DecisionResDetailDTO decisionResDetailDTO = engineResult.getData();
         TbDecisionResDetail tbDecisionResDetail = decisionResDetailService.selectByTransId(decisionResDetailDTO.getTrans_id());
-        Order order = orderService.selectByPrimaryKey(tbDecisionResDetail.getOrder_id());
+        Order order = orderService.selectByPrimaryKey(tbDecisionResDetail.getOrderId());
         if (order == null) {
             log.info("风控订单，订单不存在");
             return ConstantUtils.FAIL;

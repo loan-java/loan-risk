@@ -15,15 +15,28 @@ public class QjldOrderIdMessage {
      */
     private Long orderId;
 
+    /**
+     * 平台订单编号
+     */
+    private String orderNo;
+
+    /**
+     * 订单来源，0-聚合，1-融泽
+     */
+    private Integer source;
+
+
     private int times;// 查询次数
 
-    public QjldOrderIdMessage(){
+    public QjldOrderIdMessage() {
 
     }
 
-    public QjldOrderIdMessage(String transId, Long orderId) {
+    public QjldOrderIdMessage(String transId, Long orderId, String orderNo, Integer source) {
         this.transId = transId;
         this.orderId = orderId;
+        this.orderNo = orderNo;
+        this.source = source;
     }
 
 
@@ -52,12 +65,31 @@ public class QjldOrderIdMessage {
         this.transId = transId;
     }
 
+
     @Override
     public String toString() {
         return "QjldOrderIdMessage{" +
                 "transId='" + transId + '\'' +
                 ", orderId=" + orderId +
+                ", orderNo='" + orderNo + '\'' +
+                ", source=" + source +
                 ", times=" + times +
                 '}';
+    }
+
+    public String getOrderNo() {
+        return orderNo;
+    }
+
+    public void setOrderNo(String orderNo) {
+        this.orderNo = orderNo;
+    }
+
+    public Integer getSource() {
+        return source;
+    }
+
+    public void setSource(Integer source) {
+        this.source = source;
     }
 }
