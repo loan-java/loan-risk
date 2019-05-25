@@ -6,29 +6,40 @@ package com.mod.loan.common.message;
 public class RiskAuditMessage {
 
     /**
-     * 订单id
+     * 订单id 只有聚合有
      */
     private Long orderId;
 
     /**
-     * 所属商户
+     * 订单编号  聚合融泽都有
      */
-    private String merchant;
-    /**
-     * 1-返回上次结果 2-重新执行
-     */
-    private Integer status;
-
-    private int times;// 查询次数
+    private String orderNo;
 
     /**
      * 用户uid
      */
     private Long uid;
+
     /**
-     * 用户电话
+     * 所属商户
      */
-    private String userPhone;
+    private String merchant;
+
+
+    // 查询次数
+    private int times;
+
+
+    /**
+     * 1-返回上次结果 2-重新执行
+     */
+    private Integer status;
+
+
+    /**
+     * 订单来源，0-聚合，1-融泽
+     */
+    private Integer source;
 
     public Long getOrderId() {
         return orderId;
@@ -62,13 +73,6 @@ public class RiskAuditMessage {
         this.uid = uid;
     }
 
-    public String getUserPhone() {
-        return userPhone;
-    }
-
-    public void setUserPhone(String userPhone) {
-        this.userPhone = userPhone;
-    }
 
     public int getTimes() {
         return times;
@@ -78,15 +82,33 @@ public class RiskAuditMessage {
         this.times = times;
     }
 
+
+    public String getOrderNo() {
+        return orderNo;
+    }
+
+    public void setOrderNo(String orderNo) {
+        this.orderNo = orderNo;
+    }
+
+    public Integer getSource() {
+        return source;
+    }
+
+    public void setSource(Integer source) {
+        this.source = source;
+    }
+
     @Override
     public String toString() {
         return "RiskAuditMessage{" +
                 "orderId=" + orderId +
+                ", orderNo='" + orderNo + '\'' +
                 ", merchant='" + merchant + '\'' +
                 ", status=" + status +
                 ", times=" + times +
                 ", uid=" + uid +
-                ", userPhone='" + userPhone + '\'' +
+                ", source=" + source +
                 '}';
     }
 }
