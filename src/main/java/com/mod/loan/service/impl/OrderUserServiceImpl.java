@@ -5,7 +5,9 @@ import com.mod.loan.mapper.OrderUserMapper;
 import com.mod.loan.model.OrderUser;
 import com.mod.loan.service.OrderUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class OrderUserServiceImpl extends BaseServiceImpl<OrderUser, Long> implements OrderUserService {
 
     @Autowired
