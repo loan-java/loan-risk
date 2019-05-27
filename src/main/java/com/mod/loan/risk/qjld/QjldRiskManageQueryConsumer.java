@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 /**
  * loan-pay 2019/4/20 huijin.shuailijie Init
@@ -150,6 +151,7 @@ public class QjldRiskManageQueryConsumer {
                 decisionRes.setCode(PolicyResultEnum.REJECT.getCode());
                 decisionRes.setDesc("拒绝");
                 TbDecisionResDetail resDetail = new TbDecisionResDetail(decisionRes);
+                resDetail.setCreatetime(new Date());
                 decisionResDetailService.updateByTransId(resDetail);
                 callbackThird(orderUser, decisionRes);
             }

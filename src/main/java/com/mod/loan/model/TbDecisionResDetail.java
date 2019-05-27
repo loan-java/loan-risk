@@ -238,6 +238,9 @@ public class TbDecisionResDetail {
     }
 
 
+    public TbDecisionResDetail() {
+    }
+
     public TbDecisionResDetail(DecisionResDetailDTO decisionResDetailDTO) {
         this.decisionNo = decisionResDetailDTO.getDecision_no();
         this.transId = decisionResDetailDTO.getTrans_id();
