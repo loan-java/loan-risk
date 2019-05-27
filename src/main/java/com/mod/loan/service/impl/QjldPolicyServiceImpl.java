@@ -96,7 +96,7 @@ public class QjldPolicyServiceImpl implements QjldPolicyService {
         userDTO.setId_name(user.getUserName());
         userDTO.setId_card(user.getUserCertNo());
         userDTO.setPhone(user.getUserPhone());
-        userDTO.setBank_card_no(userBank.getCardNo());
+        //userDTO.setBank_card_no(userBank.getCardNo());
         reqDTO.setBase_user(userDTO);
         //添加商户信息(新颜分配的商户号)
         reqDTO.setMember_id(qjldConfig.getQjldMemberId());
