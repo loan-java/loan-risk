@@ -127,8 +127,7 @@ public class QjldRiskManageConsumer {
             log.error("风控异常", e);
             if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
                 redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId());
-            } else if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
-
+            } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
                 redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderNo());
             }
             if (riskAuditMessage.getTimes() < 6) {
