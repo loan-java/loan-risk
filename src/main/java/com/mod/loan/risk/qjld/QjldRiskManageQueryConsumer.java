@@ -72,7 +72,7 @@ public class QjldRiskManageQueryConsumer {
 
     @RabbitListener(queues = "qjld_queue_risk_order_result", containerFactory = "qjld_risk_order_result")
     @RabbitHandler
-    public void risk_order_notify(Message mess) {
+    public void risk_order_query(Message mess) {
         QjldOrderIdMessage qjldOrderIdMessage = JSONObject.parseObject(mess.getBody(), QjldOrderIdMessage.class);
         log.info("分控订单,[result]：" + qjldOrderIdMessage.toString());
         Order order = null;

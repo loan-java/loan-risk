@@ -125,7 +125,12 @@ public class QjldRiskManageConsumer {
             //风控异常重新提交订单或者进入人工审核
             log.error("风控异常{}", JSON.toJSONString(riskAuditMessage));
             log.error("风控异常", e);
-            redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId());
+            if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
+                redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId());
+            } else if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
+
+                redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderNo());
+            }
             if (riskAuditMessage.getTimes() < 6) {
                 riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
                 rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_notify, riskAuditMessage);
