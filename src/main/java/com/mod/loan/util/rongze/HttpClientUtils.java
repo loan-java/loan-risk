@@ -49,7 +49,7 @@ public class HttpClientUtils {
 			if (responseCode != 200) {
 				log.error("sendPost Error===" + responseCode);
 			} else {
-				log.error("sendPost success!" + responseCode);
+				log.info("sendPost success===" + responseCode);
 			}
 
 			result.append(getContent(con.getInputStream(), "UTF-8"));
