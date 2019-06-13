@@ -80,7 +80,7 @@ public class PbRiskManageConsumer {
     @Resource
     private CallBackRongZeService callBackRongZeService;
 
-    @RabbitListener(queues = "qjld_queue_risk_order_notify", containerFactory = "qjld_risk_order_notify")
+    @RabbitListener(queues = "pb_queue_risk_order_notify", containerFactory = "pb_risk_order_notify")
     @RabbitHandler
     public void risk_order_notify(Message mess) {
         RiskAuditMessage riskAuditMessage = JSONObject.parseObject(mess.getBody(), RiskAuditMessage.class);
@@ -166,7 +166,7 @@ public class PbRiskManageConsumer {
         }
     }
 
-    @Bean("qjld_risk_order_notify")
+    @Bean("pb_risk_order_notify")
     public SimpleRabbitListenerContainerFactory pointTaskContainerFactoryLoan(ConnectionFactory connectionFactory) {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
