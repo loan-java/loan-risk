@@ -4,17 +4,20 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.mod.loan.common.enums.JuHeCallBackEnum;
 import com.mod.loan.common.enums.OrderStatusEnum;
+import com.mod.loan.common.enums.PbResultEnum;
 import com.mod.loan.common.enums.PolicyResultEnum;
 import com.mod.loan.common.message.QjldOrderIdMessage;
 import com.mod.loan.config.qjld.QjldConfig;
 import com.mod.loan.config.rabbitmq.RabbitConst;
 import com.mod.loan.config.redis.RedisMapper;
 import com.mod.loan.model.DTO.DecisionResDetailDTO;
+import com.mod.loan.model.DecisionPbDetail;
 import com.mod.loan.model.Order;
 import com.mod.loan.model.OrderUser;
 import com.mod.loan.model.TbDecisionResDetail;
 import com.mod.loan.service.CallBackJuHeService;
 import com.mod.loan.service.CallBackRongZeService;
+import com.mod.loan.service.DecisionPbDetailService;
 import com.mod.loan.service.DecisionResDetailService;
 import com.mod.loan.service.MerchantService;
 import com.mod.loan.service.OrderService;
@@ -48,38 +51,21 @@ public class PbRiskManageQueryConsumer {
 
     @Autowired
     private OrderService orderService;
-
-
     @Autowired
     private OrderUserService orderUserService;
-
-    @Autowired
-    private MerchantService merchantService;
     @Autowired
     private UserService userService;
     @Autowired
-    private UserBankService userBankService;
-
-    @Autowired
-    private DecisionResDetailService decisionResDetailService;
-
+    private DecisionPbDetailService decisionPbDetailService;
     @Autowired
     private RabbitTemplate rabbitTemplate;
-
-    @Autowired
-    private RedisMapper redisMapper;
-    @Autowired
-    private QjldPolicyService qjldPolicyService;
-    @Autowired
-    private QjldConfig qjldConfig;
-
     @Autowired
     private CallBackJuHeService callBackJuHeService;
     @Resource
     private CallBackRongZeService callBackRongZeService;
 
 
-    @RabbitListener(queues = "pb_queue_risk_order_result", containerFactory = "pb_risk_order_result")
+    @RabbitListener(queues = "pb_queue_risk_order_query", containerFactory = "pb_risk_order_result")
     @RabbitHandler
     public void risk_order_query(Message mess) {
         QjldOrderIdMessage qjldOrderIdMessage = JSONObject.parseObject(mess.getBody(), QjldOrderIdMessage.class);
@@ -107,35 +93,36 @@ public class PbRiskManageQueryConsumer {
             return;
         }
         try {
-            DecisionResDetailDTO decisionResDetailDTO = qjldPolicyService.qjldPolicQuery(qjldOrderIdMessage.getTransId());
-            if (decisionResDetailDTO == null || OrderStatusEnum.INIT.getCode().equals(decisionResDetailDTO.getOrderStatus()) || OrderStatusEnum.WAIT.getCode().equals(decisionResDetailDTO.getOrderStatus())) {
-                qjldOrderIdMessage.setTimes(qjldOrderIdMessage.getTimes() + 1);
-                if (qjldOrderIdMessage.getTimes() < 6) {
-                    rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_query_wait, qjldOrderIdMessage);
-                    return;
-                }
-                rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_query_wait_long, qjldOrderIdMessage);
-                return;
-            }
-            TbDecisionResDetail tbDecisionResDetail = new TbDecisionResDetail(decisionResDetailDTO);
-            decisionResDetailService.updateByTransId(tbDecisionResDetail);
+            //开始主动查询2.3接口
+            DecisionPbDetail decisionPbDetail = new DecisionPbDetail();
+
             //聚合风控通过全部转为人工审核
             if (qjldOrderIdMessage.getSource() == ConstantUtils.ZERO) {
-                if (PolicyResultEnum.AGREE.getCode().equals(decisionResDetailDTO.getCode())) {
-                    order.setStatus(ConstantUtils.unsettledOrderStatus);
+                if (PbResultEnum.APPROVE.getCode().equals(decisionPbDetail.getResult())) {
+                    order.setStatus(ConstantUtils.agreeOrderStatus);
                     orderService.updateOrderByRisk(order);
                     //支付类型为空的时候默认块钱的
                     log.info("放款类型：" + order.getPaymentType());
-                } else if (PolicyResultEnum.UNSETTLED.getCode().equals(decisionResDetailDTO.getCode())) {
+                    //目前都是人工放款
+                } else if (PbResultEnum.MANUAL.getCode().equals(decisionPbDetail.getResult())) {
                     order.setStatus(ConstantUtils.unsettledOrderStatus);
                     orderService.updateOrderByRisk(order);
-                } else {
+                } else if (PbResultEnum.DENY.getCode().equals(decisionPbDetail.getResult())) {
                     order.setStatus(ConstantUtils.rejectOrderStatus);
                     orderService.updateOrderByRisk(order);
-                    callBackJuHeService.callBack(userService.selectByPrimaryKey(order.getUid()), order.getOrderNo(), JuHeCallBackEnum.PAY_FAILED);
+                }else {
+                    if (qjldOrderIdMessage.getTimes() < 6) {
+                        qjldOrderIdMessage.setTimes(qjldOrderIdMessage.getTimes() + 1);
+                        rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_query, qjldOrderIdMessage);
+                        return;
+                    }else{
+                        //超过次数人工处理
+                        order.setStatus(ConstantUtils.unsettledOrderStatus);
+                        orderService.updateOrderByRisk(order);
+                    }
                 }
             } else if (qjldOrderIdMessage.getSource() == ConstantUtils.ONE) {
-                callbackThird(orderUser, decisionResDetailDTO);
+                callbackThird(orderUser, decisionPbDetail);
             }
             log.info("分控订单,[result]：结束");
         } catch (Exception e) {
@@ -144,7 +131,7 @@ public class PbRiskManageQueryConsumer {
             log.error("风控订单查询异常{}", e);
             if (qjldOrderIdMessage.getTimes() < 6) {
                 qjldOrderIdMessage.setTimes(qjldOrderIdMessage.getTimes() + 1);
-                rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_query_wait, qjldOrderIdMessage);
+                rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_query, qjldOrderIdMessage);
                 return;
             }
             if (qjldOrderIdMessage.getSource() == ConstantUtils.ZERO) {
@@ -153,15 +140,13 @@ public class PbRiskManageQueryConsumer {
                 orderService.updateOrderByRisk(order);
             } else if (qjldOrderIdMessage.getSource() == ConstantUtils.ONE) {
                 //融泽风控查询异常直接返回审批失败 更新风控表
-                DecisionResDetailDTO decisionRes = new DecisionResDetailDTO();
-                decisionRes.setTrans_id(qjldOrderIdMessage.getTransId());
-                decisionRes.setOrderStatus("FAIL");
-                decisionRes.setCode(PolicyResultEnum.REJECT.getCode());
-                decisionRes.setDesc("拒绝");
-                TbDecisionResDetail resDetail = new TbDecisionResDetail(decisionRes);
-                resDetail.setCreatetime(new Date());
-                decisionResDetailService.updateByTransId(resDetail);
-                callbackThird(orderUser, decisionRes);
+                DecisionPbDetail decisionPbDetail = new DecisionPbDetail();
+                decisionPbDetail.setStatus("FAIL");
+                decisionPbDetail.setCode(PolicyResultEnum.REJECT.getCode());
+                decisionPbDetail.setDesc("拒绝");
+                decisionPbDetail.setOrderNo(qjldOrderIdMessage.getOrderNo());
+                decisionPbDetailService.insert(decisionPbDetail);
+                callbackThird(orderUser, decisionPbDetail);
             }
         }
     }
@@ -175,7 +160,7 @@ public class PbRiskManageQueryConsumer {
         return factory;
     }
 
-    private void callbackThird(OrderUser orderUser, DecisionResDetailDTO risk) {
+    private void callbackThird(OrderUser orderUser, DecisionPbDetail risk) {
         callBackRongZeService.pushRiskResult(orderUser, risk.getCode(), risk.getDesc());
     }
 }
