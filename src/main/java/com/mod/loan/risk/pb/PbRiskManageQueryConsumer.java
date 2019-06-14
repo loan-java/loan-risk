@@ -7,6 +7,7 @@ import com.mod.loan.common.enums.OrderStatusEnum;
 import com.mod.loan.common.enums.PbResultEnum;
 import com.mod.loan.common.enums.PolicyResultEnum;
 import com.mod.loan.common.message.QjldOrderIdMessage;
+import com.mod.loan.common.message.RiskAuditMessage;
 import com.mod.loan.config.qjld.QjldConfig;
 import com.mod.loan.config.rabbitmq.RabbitConst;
 import com.mod.loan.config.redis.RedisMapper;
@@ -65,34 +66,34 @@ public class PbRiskManageQueryConsumer {
     @RabbitListener(queues = "pb_queue_risk_order_query", containerFactory = "pb_risk_order_result")
     @RabbitHandler
     public void risk_order_query(Message mess) {
-        QjldOrderIdMessage qjldOrderIdMessage = JSONObject.parseObject(mess.getBody(), QjldOrderIdMessage.class);
-        log.info("分控订单,[result]：" + qjldOrderIdMessage.toString());
+        RiskAuditMessage riskAuditMessage = JSONObject.parseObject(mess.getBody(), RiskAuditMessage.class);
+        log.info("分控订单,[result]：" + riskAuditMessage.toString());
         Order order = null;
         OrderUser orderUser = null;
         Long uid =null;
         String orderNo =null;
-        if (qjldOrderIdMessage.getSource() == ConstantUtils.ZERO && qjldOrderIdMessage.getOrderId() != null) {
-            order = orderService.selectByPrimaryKey(qjldOrderIdMessage.getOrderId());
+        if (riskAuditMessage.getSource() == ConstantUtils.ZERO && riskAuditMessage.getOrderId() != null) {
+            order = orderService.selectByPrimaryKey(riskAuditMessage.getOrderId());
             if (order == null) {
-                log.info("风控查询订单，订单不存在 message={}", JSON.toJSONString(qjldOrderIdMessage));
+                log.info("风控查询订单，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
                 return;
             }
             if (order.getStatus() != ConstantUtils.newOrderStatus) { // 没有完成订单才能进入风控查询模块
-                log.info("风控查询订单，订单已完成风控查询，message={}", JSON.toJSONString(qjldOrderIdMessage));
+                log.info("风控查询订单，订单已完成风控查询，message={}", JSON.toJSONString(riskAuditMessage));
                 return;
             }
             uid = order.getUid();
             orderNo = order.getOrderNo();
-        } else if (qjldOrderIdMessage.getSource() == ConstantUtils.ONE && qjldOrderIdMessage.getOrderNo() != null) {
-            orderUser = orderUserService.selectByOrderNo(qjldOrderIdMessage.getOrderNo());
+        } else if (riskAuditMessage.getSource() == ConstantUtils.ONE && riskAuditMessage.getOrderNo() != null) {
+            orderUser = orderUserService.selectByOrderNo(riskAuditMessage.getOrderNo());
             if (orderUser == null) {
-                log.info("风控查询订单，订单不存在 message={}", JSON.toJSONString(qjldOrderIdMessage));
+                log.info("风控查询订单，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
                 return;
             }
             uid = orderUser.getUid();
             orderNo = order.getOrderNo();
         } else {
-            log.error("风控查询消息错误，message={}", JSON.toJSONString(qjldOrderIdMessage));
+            log.error("风控查询消息错误，message={}", JSON.toJSONString(riskAuditMessage));
             return;
         }
         try {
@@ -103,7 +104,7 @@ public class PbRiskManageQueryConsumer {
                 throw  new Exception("查询分控结果异常");
             }
             //聚合风控通过全部转为人工审核
-            if (qjldOrderIdMessage.getSource() == ConstantUtils.ZERO) {
+            if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
                 if (PbResultEnum.APPROVE.getCode().equals(decisionPbDetail.getResult())) {
                     order.setStatus(ConstantUtils.agreeOrderStatus);
                     orderService.updateOrderByRisk(order);
@@ -117,9 +118,9 @@ public class PbRiskManageQueryConsumer {
                     order.setStatus(ConstantUtils.rejectOrderStatus);
                     orderService.updateOrderByRisk(order);
                 }else {
-                    if (qjldOrderIdMessage.getTimes() < 6) {
-                        qjldOrderIdMessage.setTimes(qjldOrderIdMessage.getTimes() + 1);
-                        rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_query, qjldOrderIdMessage);
+                    if (riskAuditMessage.getTimes() < 6) {
+                        riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
+                        rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_query, riskAuditMessage);
                         return;
                     }else{
                         //超过次数人工处理
@@ -127,30 +128,30 @@ public class PbRiskManageQueryConsumer {
                         orderService.updateOrderByRisk(order);
                     }
                 }
-            } else if (qjldOrderIdMessage.getSource() == ConstantUtils.ONE) {
+            } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
                 callbackThird(orderUser, decisionPbDetail);
             }
             log.info("分控订单,[result]：结束");
         } catch (Exception e) {
             //风控异常重新提交订单或者进入人工审核
-            log.error("风控订单查询异常{}", JSON.toJSONString(qjldOrderIdMessage));
+            log.error("风控订单查询异常{}", JSON.toJSONString(riskAuditMessage));
             log.error("风控订单查询异常{}", e);
-            if (qjldOrderIdMessage.getTimes() < 6) {
-                qjldOrderIdMessage.setTimes(qjldOrderIdMessage.getTimes() + 1);
-                rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_query, qjldOrderIdMessage);
+            if (riskAuditMessage.getTimes() < 6) {
+                riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
+                rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_query, riskAuditMessage);
                 return;
             }
-            if (qjldOrderIdMessage.getSource() == ConstantUtils.ZERO) {
+            if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
                 //聚合风控查询异常直接转入人工审核
                 order.setStatus(ConstantUtils.unsettledOrderStatus);
                 orderService.updateOrderByRisk(order);
-            } else if (qjldOrderIdMessage.getSource() == ConstantUtils.ONE) {
+            } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
                 //融泽风控查询异常直接返回审批失败 更新风控表
                 DecisionPbDetail decisionPbDetail = new DecisionPbDetail();
                 decisionPbDetail.setStatus("FAIL");
                 decisionPbDetail.setCode(PolicyResultEnum.REJECT.getCode());
                 decisionPbDetail.setDesc("拒绝");
-                decisionPbDetail.setOrderNo(qjldOrderIdMessage.getOrderNo());
+                decisionPbDetail.setOrderNo(riskAuditMessage.getOrderNo());
                 decisionPbDetailService.insert(decisionPbDetail);
                 callbackThird(orderUser, decisionPbDetail);
             }
