@@ -50,7 +50,7 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
     public void pushRiskResultForPb(OrderUser orderUser, String riskCode, String riskDesc) {
         try {
             //只推审核通过跟审核拒绝
-            if (!(PbResultEnum.isAPPROVE(riskCode) || PbResultEnum.isDENY(riskCode))) {
+            if (!(PbResultEnum.isAPPROVE(riskCode) || PbResultEnum.isDENY(riskCode)|| PbResultEnum.isMANUAL(riskCode))) {
                 return;
             }
             if (orderUser == null || orderUser.getOrderNo() == null) {
