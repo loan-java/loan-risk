@@ -60,14 +60,14 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             //开始拼接数据
             String times=new DateTime().toString(TimeUtils.dateformat5);
             String timstramp=new DateTime().toString(TimeUtils.dateformat1);
-            String serials_no = String.format("%s%s%s", "p", times, user.getId());
+//            String serials_no = String.format("%s%s%s", "p", times, user.getId());
             ///设置缓存
 //            redisMapper.set(serials_no, user.getId()+"&" + times);
             //开始请求
             ApplyWithCreditRequest request = new ApplyWithCreditRequest();
             request.setMerchantId(pbConfig.getMerchantId());
             request.setProductId(pbConfig.getProductId());
-            request.setLoanNo(serials_no);//todo 这里要修改为 orderNo
+            request.setLoanNo(orderNo);//todo 这里要修改为 orderNo
             //模型好从开放平台获取，这里只是例子
             request.setVersion(pbConfig.getVersion());
             request.setUserName(user.getUserName());
