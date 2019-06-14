@@ -328,8 +328,8 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
     @Override
     public DecisionPbDetail queryCreditResult(DecisionPbDetail detail) throws Exception {
         try {
-            String loanNo=detail.getLoanNo();
-            String timeStamp=DateUtil.dateToStr(detail.getCreatetime());
+            String loanNo=detail.getOrderNo();
+            String timeStamp=DateUtil.dateToStrLong(detail.getCreatetime());
             String orderDate=DateUtil.dateToYYYYMMDD(detail.getCreatetime());
             QueryCreditResultRequest request = new QueryCreditResultRequest();
             request.setMerchantId(pbConfig.getMerchantId());
@@ -344,6 +344,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             //开始封装数据
             if(baseResponse != null) {
                 if(baseResponse.getRspCode().equals("000000")){
+                    //直接更新风控信息
                     detail.setCode(baseResponse.getRspCode());
                     detail.setMsg(baseResponse.getRspMsg());
                     detail.setUpdatetime(new Date());
@@ -356,7 +357,6 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
         }catch (Exception e) {
             e.printStackTrace();
             log.error("订单查询接口出错", e);
-            throw new Exception("订单查询接口出错");
         }
         return detail;
     }

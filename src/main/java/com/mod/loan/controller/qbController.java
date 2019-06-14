@@ -35,7 +35,7 @@ public class qbController {
 
     @RequestMapping(value = "/queryCreditResult")
     public String queryCreditResult() throws Exception {
-        DecisionPbDetail detail = decisionPbDetailService.selectByPrimaryKey((long)935);
+        DecisionPbDetail detail = decisionPbDetailService.selectByPrimaryKey((long)282);
         DecisionPbDetail decisionPbDetail = decisionPbDetailService.queryCreditResult(detail);
         return String.valueOf(decisionPbDetail);
     }

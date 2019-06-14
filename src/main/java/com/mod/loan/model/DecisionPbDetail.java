@@ -27,9 +27,6 @@ public class DecisionPbDetail {
     @Column(name = "loan_no")
     private String loanNo;
 
-    @Column(name = "status")
-    private String status;
-
     @Column(name = "result")
     private String result;
 
@@ -45,13 +42,13 @@ public class DecisionPbDetail {
     @Column(name = "loan_unit")
     private String loanUnit;
 
-    @Column(name = "code")
+    @Column(name = "pb_code")
     private String code;
 
     @Column(name = "msg")
     private String msg;
 
-    @Column(name = "desc")
+    @Column(name = "pb_desc")
     private String desc;
 
     @Column(name = "score")
@@ -93,14 +90,6 @@ public class DecisionPbDetail {
 
     public void setLoanNo(String loanNo) {
         this.loanNo = loanNo;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public Long getLoanMoney() {
@@ -198,7 +187,6 @@ public class DecisionPbDetail {
                 ", orderId=" + orderId +
                 ", orderNo='" + orderNo + '\'' +
                 ", loanNo='" + loanNo + '\'' +
-                ", status='" + status + '\'' +
                 ", result='" + result + '\'' +
                 ", loanMoney=" + loanMoney +
                 ", loanRate=" + loanRate +

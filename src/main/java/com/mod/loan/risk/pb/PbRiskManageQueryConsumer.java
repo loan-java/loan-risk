@@ -148,8 +148,7 @@ public class PbRiskManageQueryConsumer {
             } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
                 //融泽风控查询异常直接返回审批失败 更新风控表
                 DecisionPbDetail decisionPbDetail = new DecisionPbDetail();
-                decisionPbDetail.setStatus("FAIL");
-                decisionPbDetail.setCode(PolicyResultEnum.REJECT.getCode());
+                decisionPbDetail.setResult(PbResultEnum.DENY.getCode());
                 decisionPbDetail.setDesc("拒绝");
                 decisionPbDetail.setOrderNo(riskAuditMessage.getOrderNo());
                 decisionPbDetailService.insert(decisionPbDetail);
