@@ -66,4 +66,28 @@ public class StringUtil {
         }
         return buffer.toString();
     }
+
+    /* 性别判断
+     * @param value
+     * @return 1:女、2:男
+     */
+    public  static  String execute(String value) {
+        value = value.trim();
+        if (value.length() == 15) {
+            if (Integer.parseInt(value.substring(14, 15)) % 2 == 0) {
+                return "女";
+            } else {
+                return "男";
+            }
+        } else if (value.length() == 18) {
+            if (Integer.parseInt(value.substring(16).substring(0, 1)) % 2 == 0) {
+                return "女";
+            } else {
+                return "男";
+            }
+        } else {
+            return "男";
+        }
+    }
+
 }

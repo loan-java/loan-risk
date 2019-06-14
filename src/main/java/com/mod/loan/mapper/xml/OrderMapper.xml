@@ -32,4 +32,22 @@
 		<result column="source" jdbcType="INTEGER" property="source"/>
 	</resultMap>
 
+	<select id="findUserLatestOrder" resultMap="BaseResultMap">
+		select * from tb_order where uid=#{uid} order by id desc limit 1
+	</select>
+
+	<select id="getByUid" resultMap="BaseResultMap">
+		select id,order_no,create_time,
+		ifnull(borrow_money,0) as borrow_money,
+		arrive_time,
+		repay_time,
+		real_repay_time,
+		ifnull(actual_money,0) as actual_money,
+		ifnull(should_repay,0) as should_repay,
+		ifnull(had_repay,0) as had_repay
+		from tb_order
+		where uid=#{uid} and status &gt;= 30
+		order by id desc
+	</select>
+
 </mapper>

@@ -10,4 +10,6 @@ public interface CallBackRongZeService {
      *
      */
     void pushRiskResult(OrderUser orderUser, String riskCode, String riskDesc);
+
+    void pushRiskResultForPb(OrderUser orderUser, String riskCode, String riskDesc);
 }

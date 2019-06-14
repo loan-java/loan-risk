@@ -12,6 +12,7 @@ public class DateUtil {
     public static String pattern = "yyyy-MM-dd";
     public static SimpleDateFormat formatter = new SimpleDateFormat(pattern);
     public static SimpleDateFormat formatter2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public static SimpleDateFormat formatter3 = new SimpleDateFormat("yyyyMMdd");
     public static DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern(pattern);
 
     public static DateTimeFormatter getDateTimeFormatter() {
@@ -106,8 +107,20 @@ public class DateUtil {
      * @return
      */
     public static String dateToStrLong(Date dateDate) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String dateString = formatter.format(dateDate);
+        if(dateDate == null) return null;
+        String dateString = formatter2.format(dateDate);
+        return dateString;
+    }
+
+    /**
+     * 将长时间格式时间转换为字符串 YYYYMMDD
+     *
+     * @param dateDate
+     * @return
+     */
+    public static String dateToYYYYMMDD(Date dateDate) {
+        if(dateDate == null) return null;
+        String dateString = formatter3.format(dateDate);
         return dateString;
     }
 

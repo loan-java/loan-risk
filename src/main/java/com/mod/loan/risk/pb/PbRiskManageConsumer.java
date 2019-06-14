@@ -2,6 +2,7 @@ package com.mod.loan.risk.pb;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.mod.loan.common.enums.PbResultEnum;
 import com.mod.loan.common.enums.PolicyResultEnum;
 import com.mod.loan.common.message.RiskAuditMessage;
 import com.mod.loan.config.rabbitmq.RabbitConst;
@@ -54,12 +55,17 @@ public class PbRiskManageConsumer {
     private UserService userService;
     @Autowired
     private UserBankService userBankService;
+    @Autowired
+    private DecisionPbDetailService decisionPbDetailService;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
 
     @Autowired
     private RedisMapper redisMapper;
+
+    @Resource
+    private CallBackRongZeService callBackRongZeService;
 
     @RabbitListener(queues = "pb_queue_risk_order_notify", containerFactory = "pb_risk_order_notify")
     @RabbitHandler
@@ -68,6 +74,8 @@ public class PbRiskManageConsumer {
         log.info("风控信息,[notify]：" + riskAuditMessage.toString());
         Order order = null;
         OrderUser orderUser = null;
+        Long uid = null;
+        String orderNo = null;
         //聚合订单校验
         if (riskAuditMessage.getSource() == ConstantUtils.ZERO && riskAuditMessage.getOrderId() != null) {
             order = orderService.selectByPrimaryKey(riskAuditMessage.getOrderId());
@@ -83,6 +91,8 @@ public class PbRiskManageConsumer {
                 log.info("风控，无效的订单状态 message={}", JSON.toJSONString(riskAuditMessage));
                 return;
             }
+            uid = order.getUid();
+            orderNo = order.getOrderNo();
             //融泽订单校验
         } else if (riskAuditMessage.getSource() == ConstantUtils.ONE && riskAuditMessage.getOrderNo() != null) {
             orderUser = orderUserService.selectByOrderNo(riskAuditMessage.getOrderNo());
@@ -94,6 +104,8 @@ public class PbRiskManageConsumer {
                 log.info("风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
                 return;
             }
+            uid = order.getUid();
+            orderNo = order.getOrderNo();
         } else {
             log.error("风控消息错误，message={}", JSON.toJSONString(riskAuditMessage));
             return;
@@ -104,13 +116,14 @@ public class PbRiskManageConsumer {
             return;
         }
         try {
-            UserBank userBank = userBankService.selectUserCurrentBankCard(riskAuditMessage.getUid());
-            User user = userService.selectByPrimaryKey(riskAuditMessage.getUid());
-            String serials_no = String.format("%s%s%s", "p", new DateTime().toString(TimeUtils.dateformat5),
-                    user.getId());
+            User user = userService.selectByPrimaryKey(uid);
             //开始请求2.2接口
-
-
+            DecisionPbDetail decisionPbDetail = decisionPbDetailService.creditApply(user, orderNo);
+            if(decisionPbDetail == null){
+                log.error("风控失败错误，结束================");
+                throw new Exception("风控失败错误");
+            }
+            rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_query, riskAuditMessage);
             log.info("风控,[notify]：结束");
         } catch (Exception e) {
             //风控异常重新提交订单或者进入人工审核
@@ -121,9 +134,7 @@ public class PbRiskManageConsumer {
             } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
                 redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderNo());
             }
-            //异常进入2.3接口查询分控结果
             rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_query, riskAuditMessage);
-            return;
         }
     }
 

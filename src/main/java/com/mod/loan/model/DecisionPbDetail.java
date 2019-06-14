@@ -37,7 +37,7 @@ public class DecisionPbDetail {
     private Long loanMoney;
 
     @Column(name = "loan_rate")
-    private Double loanRate;
+    private String loanRate;
 
     @Column(name = "loan_number")
     private Integer loanNumber;
@@ -55,7 +55,7 @@ public class DecisionPbDetail {
     private String desc;
 
     @Column(name = "score")
-    private Double score;
+    private String score;
 
     @Column(name = "create_time")
     private Date createtime;
@@ -111,11 +111,11 @@ public class DecisionPbDetail {
         this.loanMoney = loanMoney;
     }
 
-    public Double getLoanRate() {
+    public String getLoanRate() {
         return loanRate;
     }
 
-    public void setLoanRate(Double loanRate) {
+    public void setLoanRate(String loanRate) {
         this.loanRate = loanRate;
     }
 
@@ -159,11 +159,11 @@ public class DecisionPbDetail {
         this.desc = desc;
     }
 
-    public Double getScore() {
+    public String getScore() {
         return score;
     }
 
-    public void setScore(Double score) {
+    public void setScore(String score) {
         this.score = score;
     }
 

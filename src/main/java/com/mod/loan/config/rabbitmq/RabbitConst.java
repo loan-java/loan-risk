@@ -18,7 +18,7 @@ public class RabbitConst {
 
 
     public final static String pb_queue_risk_order_notify = "pb_queue_risk_order_notify"; // 盘宝风控订单审核通知
-    public final static String pb_queue_risk_order_query = "pb_queue_risk_order_result"; // 盘宝风控订单结果查询
+    public final static String pb_queue_risk_order_query = "pb_queue_risk_order_query"; // 盘宝风控订单结果查询
 
 
 }

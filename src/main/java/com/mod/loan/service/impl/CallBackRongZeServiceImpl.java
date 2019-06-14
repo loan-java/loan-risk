@@ -1,6 +1,7 @@
 package com.mod.loan.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.mod.loan.common.enums.PbResultEnum;
 import com.mod.loan.common.enums.PolicyResultEnum;
 import com.mod.loan.config.Constant;
 import com.mod.loan.model.OrderUser;
@@ -31,6 +32,25 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
         try {
             //只推审核通过跟审核拒绝
             if (!(PolicyResultEnum.isAgree(riskCode) || PolicyResultEnum.isReject(riskCode))) {
+                return;
+            }
+            if (orderUser == null || orderUser.getOrderNo() == null) {
+                return;
+            }
+            //推审批结
+            postRiskResult(orderUser, riskCode, riskDesc);
+
+        } catch (Exception e) {
+            log.error("给融泽推送风控审批结果失败: " + e.getMessage(), e);
+        }
+    }
+
+
+    @Override
+    public void pushRiskResultForPb(OrderUser orderUser, String riskCode, String riskDesc) {
+        try {
+            //只推审核通过跟审核拒绝
+            if (!(PbResultEnum.isAPPROVE(riskCode) || PbResultEnum.isDENY(riskCode))) {
                 return;
             }
             if (orderUser == null || orderUser.getOrderNo() == null) {
