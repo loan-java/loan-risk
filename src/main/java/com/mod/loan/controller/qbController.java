@@ -27,17 +27,17 @@ public class qbController {
 
     @RequestMapping(value = "/creditApply")
     public String creditApply() throws Exception {
-        User user =userService.selectByPrimaryKey((long)939);
-        String orderNo="1661361583869370368";
+        User user =userService.selectByPrimaryKey((long)940);
+        String orderNo="1665673124496871424";
         DecisionPbDetail decisionPbDetail = decisionPbDetailService.creditApply(user, orderNo);
-        return decisionPbDetail.toString();
+        return String.valueOf(decisionPbDetail);
     }
 
     @RequestMapping(value = "/queryCreditResult")
     public String queryCreditResult() throws Exception {
-        DecisionPbDetail detail = new DecisionPbDetail();
+        DecisionPbDetail detail = decisionPbDetailService.selectByPrimaryKey((long)935);
         DecisionPbDetail decisionPbDetail = decisionPbDetailService.queryCreditResult(detail);
-        return decisionPbDetail.toString();
+        return String.valueOf(decisionPbDetail);
     }
 
 

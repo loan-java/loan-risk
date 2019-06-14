@@ -3,6 +3,7 @@ package com.mod.loan.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.mod.loan.common.enums.PbResultEnum;
 import com.mod.loan.config.Constant;
 import com.mod.loan.config.pb.PbConfig;
 import com.mod.loan.config.redis.RedisMapper;
@@ -59,13 +60,14 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             //开始拼接数据
             String times=new DateTime().toString(TimeUtils.dateformat5);
             String timstramp=new DateTime().toString(TimeUtils.dateformat1);
+            String serials_no = String.format("%s%s%s", "p", times, user.getId());
             ///设置缓存
 //            redisMapper.set(serials_no, user.getId()+"&" + times);
             //开始请求
             ApplyWithCreditRequest request = new ApplyWithCreditRequest();
             request.setMerchantId(pbConfig.getMerchantId());
             request.setProductId(pbConfig.getProductId());
-            request.setLoanNo(orderNo);
+            request.setLoanNo(serials_no);//todo 这里要修改为 orderNo
             //模型好从开放平台获取，这里只是例子
             request.setVersion(pbConfig.getVersion());
             request.setUserName(user.getUserName());
@@ -127,26 +129,28 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             //开始封装数据
             if(response != null) {
                 if(response.getRspCode().equals("000000")){
+                    String result=response.getResult();
                     decisionPbDetail = new DecisionPbDetail();
                     decisionPbDetail.setOrderNo(orderNo);
                     decisionPbDetail.setCode(response.getRspCode());
                     decisionPbDetail.setMsg(response.getRspMsg());
-                    decisionPbDetail.setLoanMoney(Long.valueOf(response.getLoanAmount()));
                     decisionPbDetail.setScore(response.getScore());
-                    decisionPbDetail.setLoanNumber(response.getLoanNumber());
-                    decisionPbDetail.setLoanRate(response.getLoanRate());
-                    decisionPbDetail.setLoanUnit(response.getLoanUnit());
                     decisionPbDetail.setCreatetime(new Date());
                     decisionPbDetail.setDesc(response.getDesc());
-                    decisionPbDetail.setLoanNo(response.getSlpOrderNo());
-                    decisionPbDetail.setResult(response.getResult());
+                    decisionPbDetail.setResult(result);
+                    if(PbResultEnum.APPROVE.getCode().equals(result)){
+                        decisionPbDetail.setLoanMoney(Long.valueOf(response.getLoanAmount()));
+                        decisionPbDetail.setLoanNumber(response.getLoanNumber());
+                        decisionPbDetail.setLoanRate(response.getLoanRate());
+                        decisionPbDetail.setLoanUnit(response.getLoanUnit());
+                        decisionPbDetail.setLoanNo(response.getSlpOrderNo());
+                    }
                     pbDetailMapper.insert(decisionPbDetail);
                 }
             }
         }catch (Exception e){
             e.printStackTrace();
             log.error("订单请求出错", e);
-            throw new Exception("订单请求出错");
         }
         return decisionPbDetail;
     }
@@ -215,6 +219,8 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
             //判断运营商数据
             jsonObject = JSONObject.parseObject(result);
+            String data = jsonObject.getString("data");
+            jsonObject = JSONObject.parseObject(data);
         } catch (Exception e) {
             log.error("获取jxlAccessReport出错", e);
         }
@@ -230,6 +236,8 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
             //判断运营商数据
             jsonObject = JSONObject.parseObject(result);
+            String data = jsonObject.getString("data");
+            jsonObject = JSONObject.parseObject(data);
         } catch (Exception e) {
             log.error("获取jxlOriginalData出错", e);
         }
