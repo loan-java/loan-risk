@@ -63,7 +63,7 @@ public class PbRiskManageQueryConsumer {
     private CallBackRongZeService callBackRongZeService;
 
 
-    @RabbitListener(queues = "pb_queue_risk_order_query", containerFactory = "pb_risk_order_result")
+    @RabbitListener(queues = "pb_queue_risk_order_result", containerFactory = "pb_risk_order_result")
     @RabbitHandler
     public void risk_order_query(Message mess) {
         RiskAuditMessage riskAuditMessage = JSONObject.parseObject(mess.getBody(), RiskAuditMessage.class);
@@ -120,7 +120,7 @@ public class PbRiskManageQueryConsumer {
                 }else {
                     if (riskAuditMessage.getTimes() < 6) {
                         riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
-                        rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_query, riskAuditMessage);
+                        rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result, riskAuditMessage);
                         return;
                     }else{
                         //超过次数人工处理
@@ -138,7 +138,7 @@ public class PbRiskManageQueryConsumer {
             log.error("风控订单查询异常{}", e);
             if (riskAuditMessage.getTimes() < 6) {
                 riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
-                rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_query, riskAuditMessage);
+                rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result, riskAuditMessage);
                 return;
             }
             if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {

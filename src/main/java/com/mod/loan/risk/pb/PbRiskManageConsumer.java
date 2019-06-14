@@ -123,7 +123,7 @@ public class PbRiskManageConsumer {
                 log.error("风控失败错误，结束================");
                 throw new Exception("风控失败错误");
             }
-            rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_query, riskAuditMessage);
+            rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result, riskAuditMessage);
             log.info("风控,[notify]：结束");
         } catch (Exception e) {
             //风控异常重新提交订单或者进入人工审核
@@ -134,7 +134,7 @@ public class PbRiskManageConsumer {
             } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
                 redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderNo());
             }
-            rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_query, riskAuditMessage);
+            rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result, riskAuditMessage);
         }
     }
 
