@@ -14,6 +14,7 @@ import com.mod.loan.mapper.UserBankMapper;
 import com.mod.loan.mapper.UserInfoMapper;
 import com.mod.loan.model.*;
 import com.mod.loan.service.DecisionPbDetailService;
+import com.mod.loan.service.MerchantService;
 import com.mod.loan.service.OrderUserService;
 import com.mod.loan.util.DateUtil;
 import com.mod.loan.util.StringUtil;
@@ -55,11 +56,15 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
     @Resource
     private OrderUserService orderUserService;
 
+    @Autowired
+    private MerchantService merchantService;
+
     //2.2接口调用
     @Override
     public DecisionPbDetail creditApply(User user, String orderNo) throws Exception {
         OrderUser orderUser = orderUserService.selectByOrderNo(orderNo);
         DecisionPbDetail decisionPbDetail = null;
+        Merchant merchant = merchantService.findMerchantByAlias(user.getMerchant());
         try {
             UserInfo userInfo = userInfoMapper.selectByPrimaryKey(user.getId());
             //开始拼接数据
@@ -79,7 +84,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             request.setCardNum(user.getUserCertNo());
             request.setMobile(user.getUserPhone());
             request.setTimeStamp(timstramp);
-            request.setOther("华时贷");
+            request.setOther(merchant.getMerchantName());
             JSONObject riskData = new JSONObject();
             riskData.put("name", user.getUserName());
             riskData.put("mobile", user.getUserPhone());
