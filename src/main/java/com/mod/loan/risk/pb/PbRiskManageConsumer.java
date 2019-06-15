@@ -3,30 +3,14 @@ package com.mod.loan.risk.pb;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.mod.loan.common.enums.PbResultEnum;
-import com.mod.loan.common.enums.PolicyResultEnum;
 import com.mod.loan.common.message.RiskAuditMessage;
 import com.mod.loan.config.rabbitmq.RabbitConst;
 import com.mod.loan.config.redis.RedisConst;
 import com.mod.loan.config.redis.RedisMapper;
-import com.mod.loan.model.DTO.DecisionResDetailDTO;
-import com.mod.loan.model.DecisionPbDetail;
-import com.mod.loan.model.Merchant;
-import com.mod.loan.model.Order;
-import com.mod.loan.model.OrderUser;
-import com.mod.loan.model.TbDecisionResDetail;
-import com.mod.loan.model.User;
-import com.mod.loan.model.UserBank;
-import com.mod.loan.service.CallBackRongZeService;
-import com.mod.loan.service.DecisionPbDetailService;
-import com.mod.loan.service.MerchantService;
-import com.mod.loan.service.OrderService;
-import com.mod.loan.service.OrderUserService;
-import com.mod.loan.service.UserBankService;
-import com.mod.loan.service.UserService;
+import com.mod.loan.model.*;
+import com.mod.loan.service.*;
 import com.mod.loan.util.ConstantUtils;
-import com.mod.loan.util.TimeUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.joda.time.DateTime;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -124,7 +108,7 @@ public class PbRiskManageConsumer {
                 log.error("风控失败错误，结束================");
                 throw new Exception("风控失败错误");
             }
-            rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result, riskAuditMessage);
+            rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result_wait, riskAuditMessage);
             log.info("风控,[notify]：结束");
         } catch (Exception e) {
             //风控异常重新提交订单或者进入人工审核

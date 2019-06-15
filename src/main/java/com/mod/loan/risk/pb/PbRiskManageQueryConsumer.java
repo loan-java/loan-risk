@@ -105,7 +105,7 @@ public class PbRiskManageQueryConsumer {
                 } else {
                     if (riskAuditMessage.getTimes() < 6) {
                         riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
-                        rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result, riskAuditMessage);
+                        rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result_wait, riskAuditMessage);
                         return;
                     } else {
                         //超过次数人工处理
@@ -123,7 +123,7 @@ public class PbRiskManageQueryConsumer {
             log.error("风控订单查询异常{}", e);
             if (riskAuditMessage.getTimes() < 6) {
                 riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
-                rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result, riskAuditMessage);
+                rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result_wait, riskAuditMessage);
                 return;
             }
             if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {

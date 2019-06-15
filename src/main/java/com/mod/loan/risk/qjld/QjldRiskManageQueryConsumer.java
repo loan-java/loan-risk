@@ -103,10 +103,10 @@ public class QjldRiskManageQueryConsumer {
             if (decisionResDetailDTO == null || OrderStatusEnum.INIT.getCode().equals(decisionResDetailDTO.getOrderStatus()) || OrderStatusEnum.WAIT.getCode().equals(decisionResDetailDTO.getOrderStatus())) {
                 qjldOrderIdMessage.setTimes(qjldOrderIdMessage.getTimes() + 1);
                 if (qjldOrderIdMessage.getTimes() < 6) {
-                    rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_query_wait, qjldOrderIdMessage);
+                    rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_result_wait, qjldOrderIdMessage);
                     return;
                 }
-                rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_query_wait_long, qjldOrderIdMessage);
+                rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_result_wait_long, qjldOrderIdMessage);
                 return;
             }
             TbDecisionResDetail tbDecisionResDetail = new TbDecisionResDetail(decisionResDetailDTO);
@@ -136,7 +136,7 @@ public class QjldRiskManageQueryConsumer {
             log.error("风控订单查询异常{}", e);
             if (qjldOrderIdMessage.getTimes() < 6) {
                 qjldOrderIdMessage.setTimes(qjldOrderIdMessage.getTimes() + 1);
-                rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_query_wait, qjldOrderIdMessage);
+                rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_result_wait, qjldOrderIdMessage);
                 return;
             }
             if (qjldOrderIdMessage.getSource() == ConstantUtils.ZERO) {

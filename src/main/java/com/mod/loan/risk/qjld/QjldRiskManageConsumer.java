@@ -119,7 +119,7 @@ public class QjldRiskManageConsumer {
                 TbDecisionResDetail tbDecisionResDetail = new TbDecisionResDetail(riskAuditMessage.getOrderId(), riskAuditMessage.getOrderNo(), decisionResDetailDTO.getDecision_no(), decisionResDetailDTO.getTrans_id(), decisionResDetailDTO.getOrderStatus());
                 decisionResDetailService.insert(tbDecisionResDetail);
             }
-            rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_query_wait, new QjldOrderIdMessage(decisionResDetailDTO.getTrans_id(), riskAuditMessage.getOrderId(), riskAuditMessage.getOrderNo(), riskAuditMessage.getSource()));
+            rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_result_wait, new QjldOrderIdMessage(decisionResDetailDTO.getTrans_id(), riskAuditMessage.getOrderId(), riskAuditMessage.getOrderNo(), riskAuditMessage.getSource()));
             log.info("风控,[notify]：结束");
         } catch (Exception e) {
             //风控异常重新提交订单或者进入人工审核
