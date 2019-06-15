@@ -68,7 +68,7 @@ public class PbRiskManageConsumer {
                 log.error("风控消息重复，message={}", JSON.toJSONString(riskAuditMessage));
                 return;
             }
-            if (order == null) {
+            if (order == null || order.getUid() == null || order.getOrderNo() == null) {
                 log.info("风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
                 return;
             }
@@ -85,7 +85,7 @@ public class PbRiskManageConsumer {
                 log.error("风控消息重复，message={}", JSON.toJSONString(riskAuditMessage));
                 return;
             }
-            if (orderUser == null) {
+            if (orderUser == null || orderUser.getUid() == null || orderUser.getOrderNo() == null) {
                 log.info("风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
                 return;
             }
@@ -104,10 +104,6 @@ public class PbRiskManageConsumer {
             User user = userService.selectByPrimaryKey(uid);
             //开始请求2.2接口
             DecisionPbDetail decisionPbDetail = decisionPbDetailService.creditApply(user, orderNo);
-            if (decisionPbDetail == null) {
-                log.error("风控失败错误，结束================");
-                throw new Exception("风控失败错误");
-            }
             rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result_wait, riskAuditMessage);
             log.info("风控,[notify]：结束");
         } catch (Exception e) {

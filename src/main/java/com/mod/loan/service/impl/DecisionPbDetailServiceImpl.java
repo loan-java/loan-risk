@@ -132,17 +132,17 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             log.info("订单请求接口返回结果:" + JSON.toJSONString(response));
             //开始封装数据
             if (response != null) {
+                decisionPbDetail = new DecisionPbDetail();
+                decisionPbDetail.setOrderNo(orderNo);
+                String result = response.getResult();
+                decisionPbDetail.setResult(result);
+                decisionPbDetail.setDesc(response.getDesc());
+                decisionPbDetail.setCode(response.getRspCode());
+                decisionPbDetail.setMsg(response.getRspMsg());
+                decisionPbDetail.setScore(response.getScore());
+                decisionPbDetail.setCreatetime(new Date());
+                decisionPbDetail.setUpdatetime(new Date());
                 if (response.getRspCode().equals("000000")) {
-                    String result = response.getResult();
-                    decisionPbDetail = new DecisionPbDetail();
-                    decisionPbDetail.setOrderNo(orderNo);
-                    decisionPbDetail.setCode(response.getRspCode());
-                    decisionPbDetail.setMsg(response.getRspMsg());
-                    decisionPbDetail.setScore(response.getScore());
-                    decisionPbDetail.setCreatetime(new Date());
-                    decisionPbDetail.setUpdatetime(new Date());
-                    decisionPbDetail.setDesc(response.getDesc());
-                    decisionPbDetail.setResult(result);
                     if (PbResultEnum.APPROVE.getCode().equals(result)) {
                         decisionPbDetail.setLoanMoney(Long.valueOf(response.getLoanAmount()));
                         decisionPbDetail.setLoanNumber(response.getLoanNumber());
@@ -150,8 +150,8 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                         decisionPbDetail.setLoanUnit(response.getLoanUnit());
                         // decisionPbDetail.setLoanNo(response.getSlpOrderNo());
                     }
-                    pbDetailMapper.insert(decisionPbDetail);
                 }
+                pbDetailMapper.insert(decisionPbDetail);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -349,21 +349,24 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             log.info("订单查询接口返回结果:" + JSON.toJSONString(baseResponse));
             //开始封装数据
             if (baseResponse != null) {
+                detail.setCode(baseResponse.getRspCode());
+                detail.setMsg(baseResponse.getRspMsg());
+                detail.setUpdatetime(new Date());
                 if (baseResponse.getRspCode().equals("000000")) {
                     //直接更新风控信息
-                    detail.setCode(baseResponse.getRspCode());
-                    detail.setMsg(baseResponse.getRspMsg());
-                    detail.setUpdatetime(new Date());
+                    detail.setResult(baseResponse.getResult());
                     detail.setDesc(baseResponse.getDesc());
                     detail.setLoanNo(baseResponse.getSlpOrderNo());
-                    detail.setResult(baseResponse.getResult());
                     detail.setLoanMoney(Long.valueOf(baseResponse.getLoanAmount()));
                     detail.setLoanNumber(baseResponse.getLoanNumber());
                     detail.setLoanRate(baseResponse.getLoanRate());
                     detail.setLoanUnit(baseResponse.getLoanUnit());
                     detail.setLoanNo(baseResponse.getSlpOrderNo());
-                    pbDetailMapper.updateByPrimaryKey(detail);
+                } else {
+                    detail.setResult(PbResultEnum.DENY.getCode());
+                    detail.setDesc("拒绝");
                 }
+                pbDetailMapper.updateByPrimaryKey(detail);
             }
         } catch (Exception e) {
             e.printStackTrace();

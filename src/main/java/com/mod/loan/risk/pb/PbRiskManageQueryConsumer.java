@@ -50,7 +50,7 @@ public class PbRiskManageQueryConsumer {
 
     @RabbitListener(queues = "pb_queue_risk_order_result", containerFactory = "pb_risk_order_result")
     @RabbitHandler
-    public void risk_order_query(Message mess) {
+    public void risk_order_query(Message mess) throws Exception {
         RiskAuditMessage riskAuditMessage = JSONObject.parseObject(mess.getBody(), RiskAuditMessage.class);
         log.info("分控订单,[result]：" + riskAuditMessage.toString());
         Order order = null;
@@ -59,7 +59,7 @@ public class PbRiskManageQueryConsumer {
         String orderNo = null;
         if (riskAuditMessage.getSource() == ConstantUtils.ZERO && riskAuditMessage.getOrderId() != null) {
             order = orderService.selectByPrimaryKey(riskAuditMessage.getOrderId());
-            if (order == null) {
+            if (order == null || order.getUid() == null || order.getOrderNo() == null) {
                 log.info("风控查询订单，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
                 return;
             }
@@ -71,12 +71,12 @@ public class PbRiskManageQueryConsumer {
             orderNo = order.getOrderNo();
         } else if (riskAuditMessage.getSource() == ConstantUtils.ONE && riskAuditMessage.getOrderNo() != null) {
             orderUser = orderUserService.selectByOrderNo(riskAuditMessage.getOrderNo());
-            if (orderUser == null) {
+            if (orderUser == null || orderUser.getUid() == null || orderUser.getOrderNo() == null) {
                 log.info("风控查询订单，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
                 return;
             }
             uid = orderUser.getUid();
-            orderNo = order.getOrderNo();
+            orderNo = orderUser.getOrderNo();
         } else {
             log.error("风控查询消息错误，message={}", JSON.toJSONString(riskAuditMessage));
             return;
@@ -86,9 +86,6 @@ public class PbRiskManageQueryConsumer {
             //开始主动查询2.3接口
             DecisionPbDetail decisionPbDetail = decisionPbDetailService.selectByOrderNo(orderNo);
             decisionPbDetail = decisionPbDetailService.queryCreditResult(decisionPbDetail);
-            if (decisionPbDetail == null) {
-                throw new Exception("查询分控结果异常");
-            }
             //聚合风控通过全部转为人工审核
             if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
                 if (PbResultEnum.APPROVE.getCode().equals(decisionPbDetail.getResult())) {
@@ -133,13 +130,14 @@ public class PbRiskManageQueryConsumer {
                 orderService.updateOrderByRisk(order);
             } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
                 //融泽风控查询异常直接返回审批失败 更新风控表
+                DecisionPbDetail query = decisionPbDetailService.selectByOrderNo(riskAuditMessage.getOrderNo());
                 DecisionPbDetail decisionPbDetail = new DecisionPbDetail();
+                decisionPbDetail.setId(query.getId());
                 decisionPbDetail.setResult(PbResultEnum.DENY.getCode());
                 decisionPbDetail.setDesc("拒绝");
                 decisionPbDetail.setOrderNo(riskAuditMessage.getOrderNo());
-                decisionPbDetail.setCreatetime(new Date());
                 decisionPbDetail.setUpdatetime(new Date());
-                decisionPbDetailService.insert(decisionPbDetail);
+                decisionPbDetailService.updateByPrimaryKeySelective(decisionPbDetail);
                 callbackThird(orderUser, decisionPbDetail);
             }
         }
