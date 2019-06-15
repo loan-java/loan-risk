@@ -61,6 +61,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
         OrderUser orderUser = orderUserService.selectByOrderNo(orderNo);
         DecisionPbDetail decisionPbDetail = null;
         try {
+            UserInfo userInfo = userInfoMapper.selectByPrimaryKey(user.getId());
             //开始拼接数据
             String times = new DateTime().toString(TimeUtils.dateformat5);
             String timstramp = new DateTime().toString(TimeUtils.dateformat1);
@@ -83,11 +84,12 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             riskData.put("name", user.getUserName());
             riskData.put("mobile", user.getUserPhone());
             riskData.put("idNum", user.getUserCertNo());
+            riskData.put("live_addr", userInfo.getLiveAddress() != null ? userInfo.getLiveAddress() : user.getAddress());
             riskData.put("cardSetAddr", user.getAddress());
             riskData.put("gender", StringUtil.execute(user.getUserCertNo()));
             riskData.put("apply_channel", "rongze");
             riskData.put("nation", user.getNation());
-            UserInfo userInfo = userInfoMapper.selectByPrimaryKey(user.getId());
+
             if (userInfo != null) {
                 riskData.put("emergency_contacts", emergencyContacts(userInfo));
                 riskData.put("company_addr", userInfo.getWorkAddress());
