@@ -144,7 +144,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                 decisionPbDetail.setUpdatetime(new Date());
                 if (response.getRspCode().equals("000000")) {
                     if (PbResultEnum.APPROVE.getCode().equals(result)) {
-                        decisionPbDetail.setLoanMoney(Long.valueOf(response.getLoanAmount()));
+                        decisionPbDetail.setLoanMoney(response.getLoanAmount() != null ? Long.valueOf(response.getLoanAmount()) : null);
                         decisionPbDetail.setLoanNumber(response.getLoanNumber());
                         decisionPbDetail.setLoanRate(response.getLoanRate());
                         decisionPbDetail.setLoanUnit(response.getLoanUnit());
@@ -357,7 +357,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                     detail.setResult(baseResponse.getResult());
                     detail.setDesc(baseResponse.getDesc());
                     detail.setLoanNo(baseResponse.getSlpOrderNo());
-                    detail.setLoanMoney(Long.valueOf(baseResponse.getLoanAmount()));
+                    detail.setLoanMoney(baseResponse.getLoanAmount() != null ? Long.valueOf(baseResponse.getLoanAmount()) : null);
                     detail.setLoanNumber(baseResponse.getLoanNumber());
                     detail.setLoanRate(baseResponse.getLoanRate());
                     detail.setLoanUnit(baseResponse.getLoanUnit());
