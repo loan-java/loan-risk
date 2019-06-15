@@ -218,37 +218,42 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
 
     //聚信立
     public JSONObject jxlAccessReport(String orderNo) {
-        JSONObject jsonObject = new JSONObject();
+        JSONObject members = null;
         try {
             JSONObject jsonObject1 = new JSONObject();
             jsonObject1.put("order_no", orderNo);
             jsonObject1.put("type", "1");
             String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
             //判断运营商数据
-            jsonObject = JSONObject.parseObject(result);
-            String data = jsonObject.getString("data");
-            jsonObject = JSONObject.parseObject(data);
+            JSONObject jsonObject = JSONObject.parseObject(result);
+            String dataStr = jsonObject.getString("data");
+            JSONObject all = JSONObject.parseObject(dataStr);
+            JSONObject data = all.getJSONObject("data");
+            JSONObject report = data.getJSONObject("report");
+            members = report.getJSONObject("members");
         } catch (Exception e) {
             log.error("获取jxlAccessReport出错", e);
         }
-        return jsonObject;
+        return members;
     }
 
     public JSONObject jxlOriginalData(String orderNo) {
-        JSONObject jsonObject = new JSONObject();
+        JSONObject report = null;
         try {
             JSONObject jsonObject1 = new JSONObject();
             jsonObject1.put("order_no", orderNo);
             jsonObject1.put("type", "2");
             String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
             //判断运营商数据
-            jsonObject = JSONObject.parseObject(result);
-            String data = jsonObject.getString("data");
-            jsonObject = JSONObject.parseObject(data);
+            JSONObject jsonObject = JSONObject.parseObject(result);
+            String dataStr = jsonObject.getString("data");
+            JSONObject all = JSONObject.parseObject(dataStr);
+            JSONObject data = all.getJSONObject("data");
+            report = data.getJSONObject("report");
         } catch (Exception e) {
             log.error("获取jxlOriginalData出错", e);
         }
-        return jsonObject;
+        return report;
     }
 
     //紧急联系人(至少2个)(必填)
