@@ -79,7 +79,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             request.setCardNum(user.getUserCertNo());
             request.setMobile(user.getUserPhone());
             request.setTimeStamp(timstramp);
-            request.setOther("测试环境");
+            request.setOther("华时贷");
             JSONObject riskData = new JSONObject();
             riskData.put("name", user.getUserName());
             riskData.put("mobile", user.getUserPhone());
