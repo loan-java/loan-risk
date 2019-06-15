@@ -77,7 +77,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             ApplyWithCreditRequest request = new ApplyWithCreditRequest();
             request.setMerchantId(pbConfig.getMerchantId());
             request.setProductId(pbConfig.getProductId());
-            request.setLoanNo(orderNo);//todo 这里要修改为 orderNo
+            request.setLoanNo(String.valueOf(System.currentTimeMillis()));//todo 这里要修改为 orderNo
             //模型好从开放平台获取，这里只是例子
             request.setVersion(pbConfig.getVersion());
             request.setUserName(user.getUserName());
@@ -363,15 +363,19 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                 detail.setCode(baseResponse.getRspCode());
                 detail.setMsg(baseResponse.getRspMsg());
                 detail.setUpdatetime(new Date());
-                if (baseResponse.getRspCode().equals("000000")) {
+                if (baseResponse.getRspCode().equals("000000") && "S".equals(baseResponse.getOrderStatus())) {
                     //直接更新风控信息
                     detail.setResult(baseResponse.getResult());
                     detail.setDesc(baseResponse.getDesc());
                     detail.setLoanMoney(baseResponse.getLoanAmount() != null ? Long.valueOf(baseResponse.getLoanAmount()) : null);
+                    detail.setScore(baseResponse.getScore());
                     detail.setLoanNumber(baseResponse.getLoanNumber());
                     detail.setLoanRate(baseResponse.getLoanRate());
                     detail.setLoanUnit(baseResponse.getLoanUnit());
                     detail.setLoanNo(baseResponse.getSlpOrderNo());
+                } else if (baseResponse.getRspCode().equals("000000") && ("P".equals(baseResponse.getOrderStatus()) || "I".equals(baseResponse.getOrderStatus()))) {
+                    detail.setResult(PbResultEnum.HANDLING.getCode());
+                    detail.setDesc(PbResultEnum.HANDLING.getText());
                 } else {
                     detail.setResult(PbResultEnum.DENY.getCode());
                     detail.setDesc("拒绝");
