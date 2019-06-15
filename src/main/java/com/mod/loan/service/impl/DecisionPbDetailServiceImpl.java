@@ -356,7 +356,6 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                     //直接更新风控信息
                     detail.setResult(baseResponse.getResult());
                     detail.setDesc(baseResponse.getDesc());
-                    detail.setLoanNo(baseResponse.getSlpOrderNo());
                     detail.setLoanMoney(baseResponse.getLoanAmount() != null ? Long.valueOf(baseResponse.getLoanAmount()) : null);
                     detail.setLoanNumber(baseResponse.getLoanNumber());
                     detail.setLoanRate(baseResponse.getLoanRate());
