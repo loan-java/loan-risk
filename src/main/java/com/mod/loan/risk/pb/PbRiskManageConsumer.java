@@ -89,8 +89,8 @@ public class PbRiskManageConsumer {
                 log.info("风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
                 return;
             }
-            uid = order.getUid();
-            orderNo = order.getOrderNo();
+            uid = orderUser.getUid();
+            orderNo = orderUser.getOrderNo();
         } else {
             log.error("风控消息错误，message={}", JSON.toJSONString(riskAuditMessage));
             return;
@@ -104,7 +104,7 @@ public class PbRiskManageConsumer {
             User user = userService.selectByPrimaryKey(uid);
             //开始请求2.2接口
             DecisionPbDetail decisionPbDetail = decisionPbDetailService.creditApply(user, orderNo);
-            if(decisionPbDetail == null){
+            if (decisionPbDetail == null) {
                 log.error("风控失败错误，结束================");
                 throw new Exception("风控失败错误");
             }
@@ -123,7 +123,8 @@ public class PbRiskManageConsumer {
                 riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
                 rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_notify, riskAuditMessage);
                 return;
-            }if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
+            }
+            if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
                 //聚合风控下单异常直接转入人工审核
                 order.setStatus(ConstantUtils.unsettledOrderStatus);
                 orderService.updateOrderByRisk(order);
