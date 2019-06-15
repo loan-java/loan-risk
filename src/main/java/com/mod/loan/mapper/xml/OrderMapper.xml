@@ -50,7 +50,7 @@
 		ifnull(should_repay,0) as should_repay,
 		ifnull(had_repay,0) as had_repay
 		from tb_order
-		where uid=#{uid}
+		where uid=#{uid} and status in (41,42)
 		order by id desc
     </select>
 
