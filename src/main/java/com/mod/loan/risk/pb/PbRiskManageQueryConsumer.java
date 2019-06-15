@@ -84,7 +84,8 @@ public class PbRiskManageQueryConsumer {
         try {
             User user = userService.selectByPrimaryKey(uid);
             //开始主动查询2.3接口
-            DecisionPbDetail decisionPbDetail = decisionPbDetailService.creditApply(user, orderNo);
+            DecisionPbDetail decisionPbDetail = decisionPbDetailService.selectByOrderNo(orderNo);
+            decisionPbDetail = decisionPbDetailService.queryCreditResult(decisionPbDetail);
             if (decisionPbDetail == null) {
                 throw new Exception("查询分控结果异常");
             }

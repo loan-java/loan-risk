@@ -98,9 +98,9 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             //riskData.put("score", score(user));
             //riskData.put("sms_list", smsList(user));
             //riskData.put("callrecord_list", callrecordList(user));
-            // 是否有正在借款中的订单
-            Order orderIng = orderMapper.findUserLatestOrder(user.getId());
-            if (orderIng == null || orderIng.getStatus() < 30) {
+            // 查询用户是否是复贷用户
+            List<Order> orderList = orderMapper.getDoubleLoanByUid(user.getId());
+            if (orderList.size() < 1) {
                 riskData.put("renew_loan", "0");
             } else {
                 riskData.put("renew_loan", "1");
@@ -140,6 +140,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                     decisionPbDetail.setMsg(response.getRspMsg());
                     decisionPbDetail.setScore(response.getScore());
                     decisionPbDetail.setCreatetime(new Date());
+                    decisionPbDetail.setUpdatetime(new Date());
                     decisionPbDetail.setDesc(response.getDesc());
                     decisionPbDetail.setResult(result);
                     if (PbResultEnum.APPROVE.getCode().equals(result)) {
@@ -147,7 +148,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                         decisionPbDetail.setLoanNumber(response.getLoanNumber());
                         decisionPbDetail.setLoanRate(response.getLoanRate());
                         decisionPbDetail.setLoanUnit(response.getLoanUnit());
-                        decisionPbDetail.setLoanNo(response.getSlpOrderNo());
+                        // decisionPbDetail.setLoanNo(response.getSlpOrderNo());
                     }
                     pbDetailMapper.insert(decisionPbDetail);
                 }
@@ -194,19 +195,19 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
 //         }]" +
     public JSONArray hisOrderList(User user) {
         JSONArray jsonArray = new JSONArray();
-        List<Order> orders = orderMapper.getByUid(user.getId());
+        List<Order> orders = orderMapper.getOrderByUid(user.getId());
         if (orders != null && orders.size() > 0) {
             for (Order order : orders) {
                 JSONObject jsonObject = new JSONObject();
-                jsonObject.put("order_id", order.getId());
+                jsonObject.put("order_id", order.getOrderNo());
                 jsonObject.put("order_time", DateUtil.dateToStrLong(order.getCreateTime()));
-                jsonObject.put("apply_amount", order.getId());
-                jsonObject.put("loan_time", DateUtil.dateToStrLong(order.getArriveTime()));
-                jsonObject.put("plan_repay_time", DateUtil.dateToStrLong(order.getRepayTime()));
-                jsonObject.put("actual_repay_time", DateUtil.dateToStrLong(order.getRealRepayTime()));
-                jsonObject.put("loan_amount", order.getActualMoney());
-                jsonObject.put("plan_repay_amount", order.getShouldRepay());
-                jsonObject.put("actual_repay_amount", order.getHadRepay());
+                jsonObject.put("apply_amount", order.getBorrowMoney());
+                jsonObject.put("loan_time", order.getArriveTime() != null ? DateUtil.dateToStrLong(order.getArriveTime()) : null);
+                jsonObject.put("plan_repay_time", order.getRepayTime() != null ? DateUtil.dateToStrLong(order.getRepayTime()) : null);
+                jsonObject.put("actual_repay_time", order.getRealRepayTime() != null ? DateUtil.dateToStrLong(order.getRealRepayTime()) : null);
+                jsonObject.put("loan_amount", order.getActualMoney() != null ? order.getActualMoney() : 0);
+                jsonObject.put("plan_repay_amount", order.getShouldRepay() != null ? order.getShouldRepay() : 0);
+                jsonObject.put("actual_repay_amount", order.getHadRepay() != null ? order.getHadRepay() : 0);
                 jsonArray.add(jsonObject);
             }
         }
@@ -356,6 +357,11 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                     detail.setDesc(baseResponse.getDesc());
                     detail.setLoanNo(baseResponse.getSlpOrderNo());
                     detail.setResult(baseResponse.getResult());
+                    detail.setLoanMoney(Long.valueOf(baseResponse.getLoanAmount()));
+                    detail.setLoanNumber(baseResponse.getLoanNumber());
+                    detail.setLoanRate(baseResponse.getLoanRate());
+                    detail.setLoanUnit(baseResponse.getLoanUnit());
+                    detail.setLoanNo(baseResponse.getSlpOrderNo());
                     pbDetailMapper.updateByPrimaryKey(detail);
                 }
             }
@@ -364,6 +370,11 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             log.error("订单查询接口出错", e);
         }
         return detail;
+    }
+
+    @Override
+    public DecisionPbDetail selectByOrderNo(String orderNo) throws Exception {
+        return pbDetailMapper.selectByOrderNo(orderNo);
     }
 
 

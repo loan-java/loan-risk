@@ -7,11 +7,11 @@ import java.util.List;
 
 public interface OrderMapper extends MyBaseMapper<Order> {
 
-    Order findUserLatestOrder(Long uid);
-
     /**
-     * 查找用户历史订单
+     * 查找用户完成订单
      */
-    List<Order> getByUid(Long uid);
+    List<Order> getDoubleLoanByUid(Long uid);
 
+
+    List<Order> getOrderByUid(Long uid);
 }
