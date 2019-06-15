@@ -38,6 +38,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.Date;
 
 @Slf4j
 @Component
@@ -134,7 +135,25 @@ public class PbRiskManageConsumer {
             } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
                 redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderNo());
             }
-            rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result, riskAuditMessage);
+            if (riskAuditMessage.getTimes() < 6) {
+                riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
+                rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_notify, riskAuditMessage);
+                return;
+            }if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
+                //聚合风控下单异常直接转入人工审核
+                order.setStatus(ConstantUtils.unsettledOrderStatus);
+                orderService.updateOrderByRisk(order);
+            } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
+                //融泽风控查询异常直接返回审批失败 更新风控表
+                DecisionPbDetail decisionPbDetail = new DecisionPbDetail();
+                decisionPbDetail.setResult(PbResultEnum.DENY.getCode());
+                decisionPbDetail.setDesc("拒绝");
+                decisionPbDetail.setOrderNo(riskAuditMessage.getOrderNo());
+                decisionPbDetail.setCreatetime(new Date());
+                decisionPbDetail.setUpdatetime(new Date());
+                decisionPbDetailService.insert(decisionPbDetail);
+                callbackThird(orderUser, decisionPbDetail);
+            }
         }
     }
 
@@ -147,4 +166,7 @@ public class PbRiskManageConsumer {
         return factory;
     }
 
+    private void callbackThird(OrderUser orderUser, DecisionPbDetail risk) {
+        callBackRongZeService.pushRiskResultForPb(orderUser, risk.getCode(), risk.getDesc());
+    }
 }

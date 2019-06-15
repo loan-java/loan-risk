@@ -9,7 +9,7 @@ public interface CallBackRongZeService {
      * 推送风控审批结果
      *
      */
-    void pushRiskResult(OrderUser orderUser, String riskCode, String riskDesc);
+    void pushRiskResultForQjld(OrderUser orderUser, String riskCode, String riskDesc);
 
     void pushRiskResultForPb(OrderUser orderUser, String riskCode, String riskDesc);
 }

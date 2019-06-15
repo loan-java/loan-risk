@@ -2,31 +2,16 @@ package com.mod.loan.risk.pb;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.mod.loan.common.enums.JuHeCallBackEnum;
-import com.mod.loan.common.enums.OrderStatusEnum;
 import com.mod.loan.common.enums.PbResultEnum;
-import com.mod.loan.common.enums.PolicyResultEnum;
-import com.mod.loan.common.message.QjldOrderIdMessage;
 import com.mod.loan.common.message.RiskAuditMessage;
-import com.mod.loan.config.qjld.QjldConfig;
 import com.mod.loan.config.rabbitmq.RabbitConst;
-import com.mod.loan.config.redis.RedisMapper;
-import com.mod.loan.model.*;
-import com.mod.loan.model.DTO.DecisionResDetailDTO;
-import com.mod.loan.service.CallBackJuHeService;
-import com.mod.loan.service.CallBackRongZeService;
-import com.mod.loan.service.DecisionPbDetailService;
-import com.mod.loan.service.DecisionResDetailService;
-import com.mod.loan.service.MerchantService;
-import com.mod.loan.service.OrderService;
-import com.mod.loan.service.OrderUserService;
-import com.mod.loan.service.QjldPolicyService;
-import com.mod.loan.service.UserBankService;
-import com.mod.loan.service.UserService;
+import com.mod.loan.model.DecisionPbDetail;
+import com.mod.loan.model.Order;
+import com.mod.loan.model.OrderUser;
+import com.mod.loan.model.User;
+import com.mod.loan.service.*;
 import com.mod.loan.util.ConstantUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -70,8 +55,8 @@ public class PbRiskManageQueryConsumer {
         log.info("分控订单,[result]：" + riskAuditMessage.toString());
         Order order = null;
         OrderUser orderUser = null;
-        Long uid =null;
-        String orderNo =null;
+        Long uid = null;
+        String orderNo = null;
         if (riskAuditMessage.getSource() == ConstantUtils.ZERO && riskAuditMessage.getOrderId() != null) {
             order = orderService.selectByPrimaryKey(riskAuditMessage.getOrderId());
             if (order == null) {
@@ -100,8 +85,8 @@ public class PbRiskManageQueryConsumer {
             User user = userService.selectByPrimaryKey(uid);
             //开始主动查询2.3接口
             DecisionPbDetail decisionPbDetail = decisionPbDetailService.creditApply(user, orderNo);
-            if(decisionPbDetail == null){
-                throw  new Exception("查询分控结果异常");
+            if (decisionPbDetail == null) {
+                throw new Exception("查询分控结果异常");
             }
             //聚合风控通过全部转为人工审核
             if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
@@ -117,12 +102,12 @@ public class PbRiskManageQueryConsumer {
                 } else if (PbResultEnum.DENY.getCode().equals(decisionPbDetail.getResult())) {
                     order.setStatus(ConstantUtils.rejectOrderStatus);
                     orderService.updateOrderByRisk(order);
-                }else {
+                } else {
                     if (riskAuditMessage.getTimes() < 6) {
                         riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
                         rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result, riskAuditMessage);
                         return;
-                    }else{
+                    } else {
                         //超过次数人工处理
                         order.setStatus(ConstantUtils.unsettledOrderStatus);
                         orderService.updateOrderByRisk(order);
@@ -151,6 +136,8 @@ public class PbRiskManageQueryConsumer {
                 decisionPbDetail.setResult(PbResultEnum.DENY.getCode());
                 decisionPbDetail.setDesc("拒绝");
                 decisionPbDetail.setOrderNo(riskAuditMessage.getOrderNo());
+                decisionPbDetail.setCreatetime(new Date());
+                decisionPbDetail.setUpdatetime(new Date());
                 decisionPbDetailService.insert(decisionPbDetail);
                 callbackThird(orderUser, decisionPbDetail);
             }

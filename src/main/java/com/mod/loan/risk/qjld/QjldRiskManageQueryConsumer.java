@@ -168,6 +168,6 @@ public class QjldRiskManageQueryConsumer {
     }
 
     private void callbackThird(OrderUser orderUser, DecisionResDetailDTO risk) {
-        callBackRongZeService.pushRiskResult(orderUser, risk.getCode(), risk.getDesc());
+        callBackRongZeService.pushRiskResultForQjld(orderUser, risk.getCode(), risk.getDesc());
     }
 }
