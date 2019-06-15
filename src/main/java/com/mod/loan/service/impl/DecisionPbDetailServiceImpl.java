@@ -222,7 +222,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
     }
 
     //聚信立
-    public JSONObject jxlAccessReport(String orderNo) {
+    public JSONObject jxlOriginalData(String orderNo) {
         JSONObject members = null;
         try {
             JSONObject jsonObject1 = new JSONObject();
@@ -242,7 +242,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
         return members;
     }
 
-    public JSONObject jxlOriginalData(String orderNo) {
+    public JSONObject jxlAccessReport(String orderNo) {
         JSONObject report = null;
         try {
             JSONObject jsonObject1 = new JSONObject();
