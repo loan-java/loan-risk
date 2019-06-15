@@ -77,7 +77,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             ApplyWithCreditRequest request = new ApplyWithCreditRequest();
             request.setMerchantId(pbConfig.getMerchantId());
             request.setProductId(pbConfig.getProductId());
-            request.setLoanNo(orderNo);//todo 这里要修改为 orderNo
+            request.setLoanNo(String.valueOf(System.currentTimeMillis()));//todo 这里要修改为 orderNo
             //模型好从开放平台获取，这里只是例子
             request.setVersion(pbConfig.getVersion());
             request.setUserName(user.getUserName());
@@ -223,7 +223,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
 
     //聚信立
     public JSONObject jxlOriginalData(String orderNo) {
-        JSONObject members = null;
+        JSONObject report = null;
         try {
             JSONObject jsonObject1 = new JSONObject();
             jsonObject1.put("order_no", orderNo);
@@ -234,12 +234,11 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             String dataStr = jsonObject.getString("data");
             JSONObject all = JSONObject.parseObject(dataStr);
             JSONObject data = all.getJSONObject("data");
-            JSONObject report = data.getJSONObject("report");
-            members = report.getJSONObject("members");
+            report = data.getJSONObject("report");
         } catch (Exception e) {
             log.error("获取jxlAccessReport出错", e);
         }
-        return members;
+        return report;
     }
 
     public JSONObject jxlAccessReport(String orderNo) {
