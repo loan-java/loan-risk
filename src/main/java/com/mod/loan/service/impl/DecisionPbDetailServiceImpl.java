@@ -231,17 +231,24 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             jsonObject1.put("type", "1");
             for (int times = 0; times < 10 && report == null; times++) {
                 String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                log.warn("jxlOriginalData的融泽返回结果："+result);
                 //判断运营商数据
                 JSONObject jsonObject = JSONObject.parseObject(result);
-                String dataStr = jsonObject.getString("data");
-                JSONObject all = JSONObject.parseObject(dataStr);
-                JSONObject data = all.getJSONObject("data");
-                report = data.getJSONObject("report");
-                log.info("当前获取运营报告循环次数:{}", times);
-                log.info(report.toString().substring(0, 100));
+                if(jsonObject.containsKey("data")) {
+                    String dataStr = jsonObject.getString("data");
+                    JSONObject all = JSONObject.parseObject(dataStr);
+                    if(all.containsKey("data")) {
+                        JSONObject data = all.getJSONObject("data");
+                        if(data.containsKey("report")) {
+                            report = data.getJSONObject("report");
+                        }
+                    }
+                }
+                log.info("jxlOriginalData当前获取运营报告循环次数:{}", times);
+//                log.info(report.toString().substring(0, 100));
             }
         } catch (Exception e) {
-            log.error("获取jxlAccessReport出错", e);
+            log.error("获取jxlOriginalData出错", e);
         }
         return report;
     }
@@ -254,17 +261,24 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             jsonObject1.put("type", "2");
             for (int times = 0; times < 10 && report == null; times++) {
                 String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                log.warn("jxlAccessReport的融泽返回结果："+result);
                 //判断运营商数据
                 JSONObject jsonObject = JSONObject.parseObject(result);
-                String dataStr = jsonObject.getString("data");
-                JSONObject all = JSONObject.parseObject(dataStr);
-                JSONObject data = all.getJSONObject("data");
-                report = data.getJSONObject("report");
-                log.info("当前获取运营报告循环次数:{}", times);
-                log.info(report.toString().substring(0, 100));
+                if(jsonObject.containsKey("data")) {
+                    String dataStr = jsonObject.getString("data");
+                    JSONObject all = JSONObject.parseObject(dataStr);
+                    if(all.containsKey("data")) {
+                        JSONObject data = all.getJSONObject("data");
+                        if(data.containsKey("report")) {
+                            report = data.getJSONObject("report");
+                        }
+                    }
+                }
+                log.info("jxlAccessReport当前获取运营报告循环次数:{}", times);
+//                log.info(report.toString().substring(0, 100));
             }
         } catch (Exception e) {
-            log.error("获取jxlOriginalData出错", e);
+            log.error("获取jxlAccessReport出错", e);
         }
         return report;
     }
