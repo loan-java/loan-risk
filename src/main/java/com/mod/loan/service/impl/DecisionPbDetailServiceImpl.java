@@ -275,7 +275,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                                 int n = smses.size();
                                 for (int i = 0; i < n; i++) {
                                     JSONObject smsesJson = (JSONObject) smses.get(i);
-                                    if (!smsesJson.containsKey("other_cell_phone")) {
+                                    if (!smsesJson.containsKey("other_cell_phone") || smsesJson.get("other_cell_phone") == null) {
                                         return null;
                                     }
                                 }
