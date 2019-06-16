@@ -219,5 +219,13 @@
 //        OrderPayMessage message = new OrderPayMessage(10L);
 //        rabbitTemplate.convertAndSend(RabbitConst.kuaiqian_queue_order_pay, message);
 //    }
+//    @Test
+//    public void report() {
+//        JSONObject report = new JSONObject();
+//        report.put("ss",null);
+//        if(report.get("ss") == null){
+//            System.out.println("寄哪里");
+//        }
+//    }
 //
 //}
