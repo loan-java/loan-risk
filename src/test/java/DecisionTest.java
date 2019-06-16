@@ -206,6 +206,58 @@
 //        }
 //    }
 //
+//    @Test
+//    public void test12() {
+//        JSONObject report = null;
+//        String orderNo="1665673124496871424";
+//        try {
+//            JSONObject jsonObject1 = new JSONObject();
+//            jsonObject1.put("order_no", orderNo);
+//            jsonObject1.put("type", "1");
+//            for (int times = 0; times < 10 && report == null; times++) {
+//                String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+////                log.warn("原始运营商报告数据的融泽返回结果："+result);
+//                //判断运营商数据
+//                JSONObject jsonObject = JSONObject.parseObject(result);
+//                if (jsonObject.containsKey("data")) {
+//                    String dataStr = jsonObject.getString("data");
+//                    JSONObject all = JSONObject.parseObject(dataStr);
+//                    if (all.containsKey("data")) {
+//                        JSONObject data = all.getJSONObject("data");
+//                        if (data.containsKey("report")) {
+//                            report = data.getJSONObject("report");
+//                        }
+//                    }
+//                }
+//                log.info(orderNo + "原始运营商报告数据当前获取运营报告循环次数:{}", times);
+//            }
+//            if (report != null) {
+//                if (report.containsKey("members")) {
+//                    JSONObject members = report.getJSONObject("members");
+//                    if (members.containsKey("transactions")) {
+//                        JSONArray transactions = members.getJSONArray("transactions");
+//                        if (transactions.size() > 0) {
+//                            JSONObject transactionsJson = (JSONObject) transactions.get(0);
+//                            if (transactionsJson.containsKey("smses")) {
+//                                JSONArray smses = transactionsJson.getJSONArray("smses");
+//                                int n = smses.size();
+//                                for (int i = 0; i < n; i++) {
+//                                    JSONObject smsesJson = (JSONObject) smses.get(i);
+//                                    if (!smsesJson.containsKey("other_cell_phone")) {
+//                                        System.out.println(smsesJson.toJSONString());
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+////            log.warn("原始运营商报告数据:{},{}", orderNo, report == null ? null : report.toJSONString());
+//        } catch (Exception e) {
+//            log.error(orderNo + "获取原始运营商报告数据出错", e);
+//        }
+//    }
+//
 //
 //    @Test
 //    public void putMqData2() {
