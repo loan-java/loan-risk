@@ -228,13 +228,16 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             JSONObject jsonObject1 = new JSONObject();
             jsonObject1.put("order_no", orderNo);
             jsonObject1.put("type", "1");
-            String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
-            //判断运营商数据
-            JSONObject jsonObject = JSONObject.parseObject(result);
-            String dataStr = jsonObject.getString("data");
-            JSONObject all = JSONObject.parseObject(dataStr);
-            JSONObject data = all.getJSONObject("data");
-            report = data.getJSONObject("report");
+            for (int times = 0; times < 10 && report == null; times++) {
+                String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                //判断运营商数据
+                JSONObject jsonObject = JSONObject.parseObject(result);
+                String dataStr = jsonObject.getString("data");
+                JSONObject all = JSONObject.parseObject(dataStr);
+                JSONObject data = all.getJSONObject("data");
+                report = data.getJSONObject("report");
+                log.info("当前获取运营报告循环次数:{}", times);
+            }
         } catch (Exception e) {
             log.error("获取jxlAccessReport出错", e);
         }
@@ -247,13 +250,16 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             JSONObject jsonObject1 = new JSONObject();
             jsonObject1.put("order_no", orderNo);
             jsonObject1.put("type", "2");
-            String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
-            //判断运营商数据
-            JSONObject jsonObject = JSONObject.parseObject(result);
-            String dataStr = jsonObject.getString("data");
-            JSONObject all = JSONObject.parseObject(dataStr);
-            JSONObject data = all.getJSONObject("data");
-            report = data.getJSONObject("report");
+            for (int times = 0; times < 10 && report == null; times++) {
+                String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                //判断运营商数据
+                JSONObject jsonObject = JSONObject.parseObject(result);
+                String dataStr = jsonObject.getString("data");
+                JSONObject all = JSONObject.parseObject(dataStr);
+                JSONObject data = all.getJSONObject("data");
+                report = data.getJSONObject("report");
+                log.info("当前获取运营报告循环次数:{}", times);
+            }
         } catch (Exception e) {
             log.error("获取jxlOriginalData出错", e);
         }
