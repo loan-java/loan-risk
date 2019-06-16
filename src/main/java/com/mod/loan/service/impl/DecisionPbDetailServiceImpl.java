@@ -134,12 +134,16 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             riskData.put("jxlAccessReport", jxlAccessReport(orderNo));
             riskData.put("jxlOriginalData", jxlOriginalData(orderNo));
             //判断是否存在
-            if(riskData.get("jxlAccessReport") == null || riskData.get("jxlOriginalData") == null){
+            if (riskData.get("jxlAccessReport") == null || riskData.get("jxlOriginalData") == null) {
                 //拒绝状态直接返回审批失败
                 decisionPbDetail = new DecisionPbDetail();
                 decisionPbDetail.setResult(PbResultEnum.DENY.getCode());
+                decisionPbDetail.setScore("0.0");
                 decisionPbDetail.setDesc("拒绝");
+                decisionPbDetail.setMsg("成功");
+                decisionPbDetail.setCode("000000");
                 decisionPbDetail.setOrderNo(orderNo);
+                decisionPbDetail.setLoanMoney(0L);
                 decisionPbDetail.setCreatetime(new Date());
                 decisionPbDetail.setUpdatetime(new Date());
                 pbDetailMapper.insert(decisionPbDetail);
@@ -244,31 +248,31 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
 //                log.warn("原始运营商报告数据的融泽返回结果："+result);
                 //判断运营商数据
                 JSONObject jsonObject = JSONObject.parseObject(result);
-                if(jsonObject.containsKey("data")) {
+                if (jsonObject.containsKey("data")) {
                     String dataStr = jsonObject.getString("data");
                     JSONObject all = JSONObject.parseObject(dataStr);
-                    if(all.containsKey("data")) {
+                    if (all.containsKey("data")) {
                         JSONObject data = all.getJSONObject("data");
-                        if(data.containsKey("report")) {
+                        if (data.containsKey("report")) {
                             report = data.getJSONObject("report");
                         }
                     }
                 }
                 log.info("原始运营商报告数据当前获取运营报告循环次数:{}", times);
             }
-            if(report != null) {
-                if(report.containsKey("members")) {
+            if (report != null) {
+                if (report.containsKey("members")) {
                     JSONObject members = report.getJSONObject("members");
-                    if(members.containsKey("transactions")) {
+                    if (members.containsKey("transactions")) {
                         JSONArray transactions = members.getJSONArray("transactions");
-                        if(transactions.size() > 0) {
+                        if (transactions.size() > 0) {
                             JSONObject transactionsJson = (JSONObject) transactions.get(0);
-                            if(transactionsJson.containsKey("smses")) {
+                            if (transactionsJson.containsKey("smses")) {
                                 JSONArray smses = transactionsJson.getJSONArray("smses");
                                 int n = smses.size();
                                 for (int i = 0; i < n; i++) {
                                     JSONObject smsesJson = (JSONObject) smses.get(i);
-                                    if(!smsesJson.containsKey("other_cell_phone")) {
+                                    if (!smsesJson.containsKey("other_cell_phone")) {
                                         return null;
                                     }
                                 }
@@ -277,7 +281,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                     }
                 }
             }
-            log.info("原始运营商报告数据:{}", report == null?null:report.toJSONString());
+            log.warn("原始运营商报告数据:{}", report == null ? null : report.toJSONString());
         } catch (Exception e) {
             log.error("获取原始运营商报告数据出错", e);
         }
@@ -295,19 +299,19 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
 //                log.warn("聚信立运营商报告数据的融泽返回结果："+result);
                 //判断运营商数据
                 JSONObject jsonObject = JSONObject.parseObject(result);
-                if(jsonObject.containsKey("data")) {
+                if (jsonObject.containsKey("data")) {
                     String dataStr = jsonObject.getString("data");
                     JSONObject all = JSONObject.parseObject(dataStr);
-                    if(all.containsKey("data")) {
+                    if (all.containsKey("data")) {
                         JSONObject data = all.getJSONObject("data");
-                        if(data.containsKey("report")) {
+                        if (data.containsKey("report")) {
                             report = data.getJSONObject("report");
                         }
                     }
                 }
                 log.info("聚信立运营商报告数据当前获取运营报告循环次数:{}", times);
             }
-            log.info("聚信立运营商报告数据:{}", report == null?null:report.toJSONString());
+            log.warn("聚信立运营商报告数据:{}", report == null ? null : report.toJSONString());
         } catch (Exception e) {
             log.error("获取聚信立运营商报告数据出错", e);
         }
