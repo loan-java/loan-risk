@@ -104,11 +104,11 @@ public class PbRiskManageConsumer {
             User user = userService.selectByPrimaryKey(uid);
             //开始请求2.2接口
             DecisionPbDetail decisionPbDetail = decisionPbDetailService.creditApply(user, orderNo);
-            if(decisionPbDetail != null && PbResultEnum.DENY.getCode().equals(decisionPbDetail.getResult())){
+            if (decisionPbDetail != null && PbResultEnum.DENY.getCode().equals(decisionPbDetail.getResult()) && "拒绝".equals(decisionPbDetail.getDesc())) {
                 //拒绝状态直接返回审批失败
                 callbackThird(orderUser, decisionPbDetail);
                 return;
-            }else{
+            } else {
                 rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result_wait, riskAuditMessage);
             }
             log.info("风控,[notify]：结束");
