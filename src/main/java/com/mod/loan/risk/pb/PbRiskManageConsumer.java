@@ -104,7 +104,13 @@ public class PbRiskManageConsumer {
             User user = userService.selectByPrimaryKey(uid);
             //开始请求2.2接口
             DecisionPbDetail decisionPbDetail = decisionPbDetailService.creditApply(user, orderNo);
-            rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result_wait, riskAuditMessage);
+            if(decisionPbDetail != null && PbResultEnum.DENY.getCode().equals(decisionPbDetail.getResult())){
+                //拒绝状态直接返回审批失败
+                callbackThird(orderUser, decisionPbDetail);
+                return;
+            }else{
+                rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result_wait, riskAuditMessage);
+            }
             log.info("风控,[notify]：结束");
         } catch (Exception e) {
             //风控异常重新提交订单或者进入人工审核
@@ -125,7 +131,7 @@ public class PbRiskManageConsumer {
                 order.setStatus(ConstantUtils.unsettledOrderStatus);
                 orderService.updateOrderByRisk(order);
             } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
-                //融泽风控查询异常直接返回审批失败 更新风控表
+                //融泽风控查询异常直接返回审批失败
                 DecisionPbDetail decisionPbDetail = new DecisionPbDetail();
                 decisionPbDetail.setResult(PbResultEnum.DENY.getCode());
                 decisionPbDetail.setDesc("拒绝");

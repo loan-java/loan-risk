@@ -133,6 +133,18 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             //如为聚信立
             riskData.put("jxlAccessReport", jxlAccessReport(orderNo));
             riskData.put("jxlOriginalData", jxlOriginalData(orderNo));
+            //判断是否存在
+            if(riskData.get("jxlAccessReport") == null || riskData.get("jxlOriginalData") == null){
+                //拒绝状态直接返回审批失败
+                decisionPbDetail = new DecisionPbDetail();
+                decisionPbDetail.setResult(PbResultEnum.DENY.getCode());
+                decisionPbDetail.setDesc("拒绝");
+                decisionPbDetail.setOrderNo(orderNo);
+                decisionPbDetail.setCreatetime(new Date());
+                decisionPbDetail.setUpdatetime(new Date());
+                pbDetailMapper.insert(decisionPbDetail);
+                return decisionPbDetail;
+            }
             request.setRiskData(riskData);
             RiskResultResponse response = client.creditRequest(request);
             log.info("订单请求接口返回结果:" + JSON.toJSONString(response));
@@ -229,7 +241,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             jsonObject1.put("type", "1");
             for (int times = 0; times < 10 && report == null; times++) {
                 String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
-                log.warn("原始运营商报告数据的融泽返回结果："+result);
+//                log.warn("原始运营商报告数据的融泽返回结果："+result);
                 //判断运营商数据
                 JSONObject jsonObject = JSONObject.parseObject(result);
                 if(jsonObject.containsKey("data")) {
@@ -242,9 +254,30 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                         }
                     }
                 }
-                log.warn("原始运营商报告数据当前获取运营报告循环次数:{}", times);
+                log.info("原始运营商报告数据当前获取运营报告循环次数:{}", times);
             }
-            log.warn("原始运营商报告数据:{}", report == null?null:report.toJSONString());
+            if(report != null) {
+                if(report.containsKey("members")) {
+                    JSONObject members = report.getJSONObject("members");
+                    if(members.containsKey("transactions")) {
+                        JSONArray transactions = members.getJSONArray("transactions");
+                        if(transactions.size() > 0) {
+                            JSONObject transactionsJson = (JSONObject) transactions.get(0);
+                            if(transactionsJson.containsKey("smses")) {
+                                JSONArray smses = transactionsJson.getJSONArray("smses");
+                                int n = smses.size();
+                                for (int i = 0; i < n; i++) {
+                                    JSONObject smsesJson = (JSONObject) smses.get(i);
+                                    if(!smsesJson.containsKey("other_cell_phone")) {
+                                        return null;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            log.info("原始运营商报告数据:{}", report == null?null:report.toJSONString());
         } catch (Exception e) {
             log.error("获取原始运营商报告数据出错", e);
         }
@@ -259,7 +292,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             jsonObject1.put("type", "2");
             for (int times = 0; times < 10 && report == null; times++) {
                 String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
-                log.warn("聚信立运营商报告数据的融泽返回结果："+result);
+//                log.warn("聚信立运营商报告数据的融泽返回结果："+result);
                 //判断运营商数据
                 JSONObject jsonObject = JSONObject.parseObject(result);
                 if(jsonObject.containsKey("data")) {
@@ -272,9 +305,9 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                         }
                     }
                 }
-                log.warn("聚信立运营商报告数据当前获取运营报告循环次数:{}", times);
+                log.info("聚信立运营商报告数据当前获取运营报告循环次数:{}", times);
             }
-            log.warn("聚信立运营商报告数据:{}", report == null?null:report.toJSONString());
+            log.info("聚信立运营商报告数据:{}", report == null?null:report.toJSONString());
         } catch (Exception e) {
             log.error("获取聚信立运营商报告数据出错", e);
         }
