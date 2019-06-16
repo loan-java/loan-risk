@@ -1,14 +1,18 @@
+//import com.alibaba.fastjson.JSONArray;
+//import com.alibaba.fastjson.JSONObject;
 //import com.fasterxml.jackson.databind.ObjectMapper;
 //import com.mod.loan.Application;
 //import com.mod.loan.DecisionHelper;
 //import com.mod.loan.common.message.OrderPayMessage;
 //import com.mod.loan.common.message.RiskAuditMessage;
+//import com.mod.loan.config.Constant;
 //import com.mod.loan.config.qjld.QjldConfig;
 //import com.mod.loan.config.rabbitmq.RabbitConst;
 //import com.mod.loan.model.DTO.*;
 //import com.mod.loan.util.ConstantUtils;
 //import com.mod.loan.util.RsaCodingUtil;
 //import com.mod.loan.util.RsaReadUtil;
+//import com.mod.loan.util.rongze.RongZeRequestUtil;
 //import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 //import lombok.extern.slf4j.Slf4j;
 //import org.junit.Test;
@@ -131,6 +135,75 @@
 //        message.setMerchant("jishidai");
 //        message.setUid(25L);
 //        rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_notify, message);
+//    }
+//
+//
+//    @Test
+//    public void test11() {
+//        JSONObject report = null;
+//        try {
+//            String tesr="{" +
+//                    "\"members\": {" +
+//                    "\"update_time\": \"2019-06-12 15:46:10\"," +
+//                    "\"error_msg\": \"请求用户数据成功\"," +
+//                    "\"request_args\": [{" +
+//                    "\"token\": \"15127599eaea407c8339adc619e8a7b9\"" +
+//                    "}, {" +
+//                    "\"env\": \"www\"" +
+//                    "}]," +
+//                    "\"error_code\": 31200," +
+//                    "\"transactions\": [{" +
+//                    "\"smses\": [{" +
+//                    "\"start_time\": \"2019-06-09 12:10:55\"," +
+//                    "\"update_time\": \"2019-06-12 15:46:04\"," +
+//                    "\"subtotal\": 0.0," +
+//                    "\"other_cell_phone\": \"10010\"," +
+//                    "\"cell_phone\": \"13046329502\"" +
+//                    "}, {" +
+//                    "\"start_time\": \"2019-06-08 21:01:48\"," +
+//                    "\"update_time\": \"2019-06-12 15:46:04\"," +
+//                    "\"subtotal\": 0.0," +
+//                    "\"cell_phone\": \"13046329502\"" +
+//                    "}]," +
+//                    "\"basic\": {" +
+//                    "\"update_time\": \"2019-06-12 15:46:04\"," +
+//                    "\"idcard\": \"4311****2261\"," +
+//                    "\"reg_time\": \"2015-10-11 00:00:00\"," +
+//                    "\"real_name\": \"柏颖\"," +
+//                    "\"cell_phone\": \"13046329502\"" +
+//                    "}," +
+//                    "\"version\": \"1\"," +
+//                    "\"token\": \"15127599eaea407c8339adc619e8a7b9\"" +
+//                    "}]," +
+//                    "\"status\": \"success\"" +
+//                    "}" +
+//                    "}";
+//            report=JSONObject.parseObject(tesr);
+//            if(report != null) {
+//                if(report.containsKey("members")) {
+//                    JSONObject members = report.getJSONObject("members");
+//                    if(members.containsKey("transactions")) {
+//                        JSONArray transactions = members.getJSONArray("transactions");
+//                        if(transactions.size() > 0) {
+//                            JSONObject transactionsJson = (JSONObject) transactions.get(0);
+//                            if(transactionsJson.containsKey("smses")) {
+//                                JSONArray smses = transactionsJson.getJSONArray("smses");
+//                                int n = smses.size();
+//                                for (int i = 0; i < n; i++) {
+//                                    JSONObject smsesJson = (JSONObject) smses.get(i);
+//                                    if(!smsesJson.containsKey("other_cell_phone")) {
+//                                        System.out.println(smsesJson.toJSONString());
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//            log.info("原始运营商报告数据:{}", report == null?null:report.toJSONString());
+//        } catch (Exception e) {
+//            log.error("获取原始运营商报告数据出错", e);
+//        }
 //    }
 //
 //
