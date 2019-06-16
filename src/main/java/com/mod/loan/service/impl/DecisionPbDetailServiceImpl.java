@@ -134,8 +134,8 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             riskData.put("jxlAccessReport", jxlAccessReport(orderNo));
             riskData.put("jxlOriginalData", jxlOriginalData(orderNo));
             request.setRiskData(riskData);
-            log.info("订单请求接口请求数据:{}", request.getRiskData().getJSONObject("jxlAccessReport").toString().substring(0, 100));
-            log.info("订单请求接口请求数据:{}", request.getRiskData().getJSONObject("jxlOriginalData").toString().substring(0, 100));
+            log.info("聚信立运营商报告数据:{}", request.getRiskData().getJSONObject("jxlAccessReport").toString().substring(0, 100));
+            log.info("原始运营商报告数据:{}", request.getRiskData().getJSONObject("jxlOriginalData").toString().substring(0, 100));
             RiskResultResponse response = client.creditRequest(request);
             log.info("订单请求接口返回结果:" + JSON.toJSONString(response));
             //开始封装数据
