@@ -10,8 +10,6 @@ import com.mod.loan.util.pbUtil.http.HttpUtils;
 import com.mod.loan.util.pbUtil.utils.constant.SlpConstant;
 import com.mod.loan.util.pbUtil.utils.sign.SignUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -62,8 +60,8 @@ public class PanbaoClient {
     public String call(BaseRequest request, String requestUrl) {
         request.setMerchantId(pbConfig.getMerchantId());
         request.setSign(SignUtils.getSign(request, pbConfig.getPrivateKey()));
-        log.info("请求报文打印:"+ JSON.toJSONString(request));
-        return HttpUtils.executePost(pbConfig.getPrevHost()+requestUrl, JSON.toJSONString(request));
+        log.info("请求报文打印");
+        return HttpUtils.executePost(pbConfig.getPrevHost() + requestUrl, JSON.toJSONString(request));
     }
 
     private BaseResponse verifySign(BaseResponse response) {
