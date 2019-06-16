@@ -237,6 +237,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                 JSONObject data = all.getJSONObject("data");
                 report = data.getJSONObject("report");
                 log.info("当前获取运营报告循环次数:{}", times);
+                log.info(report.toString().substring(0,100));
             }
         } catch (Exception e) {
             log.error("获取jxlAccessReport出错", e);
@@ -259,6 +260,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                 JSONObject data = all.getJSONObject("data");
                 report = data.getJSONObject("report");
                 log.info("当前获取运营报告循环次数:{}", times);
+                log.info(report.toString().substring(0,100));
             }
         } catch (Exception e) {
             log.error("获取jxlOriginalData出错", e);
