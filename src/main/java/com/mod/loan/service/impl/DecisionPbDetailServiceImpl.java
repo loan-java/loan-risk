@@ -261,7 +261,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                         }
                     }
                 }
-                log.info("原始运营商报告数据当前获取运营报告循环次数:{}", times);
+                log.info(orderNo + "原始运营商报告数据当前获取运营报告循环次数:{}", times);
             }
             if (report != null) {
                 if (report.containsKey("members")) {
@@ -284,9 +284,9 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                     }
                 }
             }
-            log.warn("原始运营商报告数据:{}", report == null ? null : report.toJSONString());
+//            log.warn("原始运营商报告数据:{},{}", orderNo, report == null ? null : report.toJSONString());
         } catch (Exception e) {
-            log.error("获取原始运营商报告数据出错", e);
+            log.error(orderNo + "获取原始运营商报告数据出错", e);
         }
         return report;
     }
@@ -312,11 +312,11 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                         }
                     }
                 }
-                log.info("聚信立运营商报告数据当前获取运营报告循环次数:{}", times);
+                log.info(orderNo + "聚信立运营商报告数据当前获取运营报告循环次数:{}", times);
             }
-            log.warn("聚信立运营商报告数据:{}", report == null ? null : report.toJSONString());
+//            log.warn("聚信立运营商报告数据:{}, {}", orderNo, report == null ? null : report.toJSONString());
         } catch (Exception e) {
-            log.error("获取聚信立运营商报告数据出错", e);
+            log.error(orderNo + "获取聚信立运营商报告数据出错", e);
         }
         return report;
     }
