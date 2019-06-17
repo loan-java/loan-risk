@@ -93,7 +93,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             riskData.put("cardSetAddr", user.getAddress());
             riskData.put("gender", StringUtil.execute(user.getUserCertNo()));
             riskData.put("apply_channel", "rongze");
-            riskData.put("nation", user.getNation());
+            riskData.put("nation", user.getNation() != null ? user.getNation() : "汉");
 
             if (userInfo != null) {
                 riskData.put("emergency_contacts", emergencyContacts(userInfo));
