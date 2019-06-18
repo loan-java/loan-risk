@@ -50,8 +50,6 @@ public class DecisionHelper {
             EngineResult<DecisionBaseResDTO> result = execute(call);
             log.info("决策请求结果:{}", result);
             log.info("================================================================");
-            log.info("================================================================");
-            log.info("================================================================");
             return result.getData();
         } catch (Exception e) {
             log.error("决策执行失败,原因:{}", e);
@@ -71,8 +69,6 @@ public class DecisionHelper {
             EngineResult<DecisionBaseResDTO> result = execute(call);
             log.info("决策请求结果:{}", result);
             log.info("================================================================");
-            log.info("================================================================");
-            log.info("================================================================");
             return result.getData();
         } catch (Exception e) {
             log.error("决策执行失败,原因:{}", e);
@@ -86,8 +82,6 @@ public class DecisionHelper {
             Call<EngineResult<DecisionResDetailDTO>> call = api.queryDecision(reqDTO);
             EngineResult<DecisionResDetailDTO> result = execute(call);
             log.info("决策请求结果:{}", result);
-            log.info("================================================================");
-            log.info("================================================================");
             log.info("================================================================");
             return result.getData();
         } catch (Exception e) {

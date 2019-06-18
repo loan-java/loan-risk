@@ -133,8 +133,8 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             //如为聚信立
             riskData.put("jxlAccessReport", jxlAccessReport(orderNo));
             riskData.put("jxlOriginalData", jxlOriginalData(orderNo));
-            log.info("=========订单：" + orderNo + "聚信立信息,聚信立运营商报告是否为空：" + (riskData.get("jxlAccessReport") == null) + "===========");
-            log.info("=========订单：" + orderNo + "聚信立信息,原始运营商报告是否为空：" + (riskData.get("jxlOriginalData") == null) + "===========");
+            log.info("订单：" + orderNo + "聚信立信息,聚信立运营商报告是否为空：" + (riskData.get("jxlAccessReport") == null));
+            log.info("订单：" + orderNo + "聚信立信息,原始运营商报告是否为空：" + (riskData.get("jxlOriginalData") == null));
             //判断是否存在
             if (riskData.get("jxlAccessReport") == null || riskData.get("jxlOriginalData") == null) {
                 //拒绝状态直接返回审批失败
@@ -149,12 +149,12 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                 decisionPbDetail.setCreatetime(new Date());
                 decisionPbDetail.setUpdatetime(new Date());
                 pbDetailMapper.insert(decisionPbDetail);
-                log.info("=========拒绝状态直接返回审批失败,orderNo=" + orderNo + "===========");
+                log.info("拒绝状态直接返回审批失败,orderNo:{}", orderNo);
                 return decisionPbDetail;
             }
             request.setRiskData(riskData);
             RiskResultResponse response = client.creditRequest(request);
-            log.info("订单请求接口返回结果:" + JSON.toJSONString(response));
+            log.info("订单请求接口返回结果:{}", JSON.toJSONString(response));
             //开始封装数据
             if (response != null) {
                 decisionPbDetail = new DecisionPbDetail();
@@ -419,9 +419,9 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             request.setLoanNo(loanNo);
             request.setOrderDate(orderDate);
             request.setTimeStamp(timeStamp);
-            log.info("订单查询接口请求数据:" + JSON.toJSONString(request));
+            log.info("订单查询接口请求数据:{}", JSON.toJSONString(request));
             QueryRiskResultResponse baseResponse = client.queryRequest(request);
-            log.info("订单查询接口返回结果:" + JSON.toJSONString(baseResponse));
+            log.info("订单查询接口返回结果:{}", JSON.toJSONString(baseResponse));
             //开始封装数据
             if (baseResponse != null) {
                 detail.setCode(baseResponse.getRspCode());

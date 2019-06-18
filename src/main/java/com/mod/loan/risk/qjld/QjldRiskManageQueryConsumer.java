@@ -75,7 +75,7 @@ public class QjldRiskManageQueryConsumer {
     @RabbitHandler
     public void risk_order_query(Message mess) {
         QjldOrderIdMessage qjldOrderIdMessage = JSONObject.parseObject(mess.getBody(), QjldOrderIdMessage.class);
-        log.info("分控订单,[result]：" + qjldOrderIdMessage.toString());
+        log.info("风控订单,[result]：" + qjldOrderIdMessage.toString());
         Order order = null;
         OrderUser orderUser = null;
         if (qjldOrderIdMessage.getSource() == ConstantUtils.ZERO && qjldOrderIdMessage.getOrderId() != null) {
@@ -117,7 +117,7 @@ public class QjldRiskManageQueryConsumer {
                     order.setStatus(ConstantUtils.unsettledOrderStatus);
                     orderService.updateOrderByRisk(order);
                     //支付类型为空的时候默认块钱的
-                    log.info("放款类型：" + order.getPaymentType());
+                    log.info("放款类型:{}", order.getPaymentType());
                 } else if (PolicyResultEnum.UNSETTLED.getCode().equals(decisionResDetailDTO.getCode())) {
                     order.setStatus(ConstantUtils.unsettledOrderStatus);
                     orderService.updateOrderByRisk(order);
