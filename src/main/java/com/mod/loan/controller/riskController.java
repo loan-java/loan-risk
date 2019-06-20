@@ -16,7 +16,7 @@ import java.util.Date;
  */
 @Slf4j
 @RestController
-public class qbController {
+public class riskController {
 
     @Autowired
     private DecisionPbDetailService decisionPbDetailService;
