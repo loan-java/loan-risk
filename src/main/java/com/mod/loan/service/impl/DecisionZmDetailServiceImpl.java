@@ -50,10 +50,6 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
     private DecisionZmDetailMapper zmDetailMapper;
     @Autowired
     private ZmConfig zmConfig;
-    @Autowired
-    private UserBankMapper userBankMapper;
-    @Autowired
-    private OrderMapper orderMapper;
     @Resource
     private UserInfoMapper userInfoMapper;
 
@@ -65,19 +61,16 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
 
     @Override
     public DecisionZmDetail creditApply(User user, String orderNo) throws Exception {
-        OrderUser orderUser = orderUserService.selectByOrderNo(orderNo);
         DecisionZmDetail zmDetail = null;
-        Merchant merchant = merchantService.findMerchantByAlias(user.getMerchant());
         try {
-            UserInfo userInfo = userInfoMapper.selectByPrimaryKey(user.getId());
+            String serials_no = String.format("%s%s%s", "p", new DateTime().toString(TimeUtils.dateformat5), user.getId());
             //开始拼接数据
-            String times = new DateTime().toString(TimeUtils.dateformat5);
-            String timstramp = new DateTime().toString(TimeUtils.dateformat1);
-//            String serials_no = String.format("%s%s%s", "p", times, user.getId());
             String model_name = zmConfig.getModelName();
             String product = orderNo;
-            String channel = merchant.getMerchantName();
-            String applyTime = timstramp;
+            Merchant merchant = merchantService.findMerchantByAlias(user.getMerchant());
+            String channel = merchant == null ? user.getMerchant() : merchant.getMerchantName();
+            OrderUser orderUser = orderUserService.selectByOrderNo(orderNo);
+            String applyTime = DateUtil.dateToStrLong(orderUser.getCreateTime());
             String mobile = user.getUserPhone();
             String name = user.getUserName();
             String idcard = user.getUserCertNo();
@@ -98,6 +91,7 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
             request.setIdcard(idcard);
             request.setUser_address(user_address);
             request.setCarrier_data(carrier_data);
+            UserInfo userInfo = userInfoMapper.selectByPrimaryKey(user.getId());
             request.setE_contacts(emergencyContacts(userInfo));
             request.setContact(contactList(user));
             String requestStr = JSON.toJSONString(request, SerializerFeature.WriteMapNullValue);
@@ -225,16 +219,6 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
     }
 
     //紧急联系人(至少2个)(必填)
-//    {
-//        "relation": "父亲",
-//            "name": "秦世伦",
-//            "phone": "18677392163"
-//    },
-//    {
-//        "relation": "朋友",
-//            "name": "曹武飞",
-//            "phone": "13878384615"
-//    },
     public List<EmergencyContact> emergencyContacts(UserInfo userInfo) {
         List<EmergencyContact> e_contacts = new ArrayList<EmergencyContact>();
         e_contacts.add(new EmergencyContact(userInfo.getDirectContactName(), userInfo.getDirectContactPhone()));
