@@ -8,10 +8,7 @@ import com.mod.loan.model.DTO.EngineResult;
 import com.mod.loan.model.DTO.ManualAuditDTO;
 import com.mod.loan.model.Order;
 import com.mod.loan.model.TbDecisionResDetail;
-import com.mod.loan.service.CallBackJuHeService;
-import com.mod.loan.service.DecisionResDetailService;
-import com.mod.loan.service.OrderService;
-import com.mod.loan.service.UserService;
+import com.mod.loan.service.*;
 import com.mod.loan.util.ConstantUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -32,7 +29,8 @@ public class QjldCallBackController {
     private OrderService orderService;
     @Autowired
     private DecisionResDetailService decisionResDetailService;
-
+    @Autowired
+    private DecisionZmDetailService zmDetailService;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;

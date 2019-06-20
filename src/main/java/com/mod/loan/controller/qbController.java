@@ -1,6 +1,7 @@
 package com.mod.loan.controller;
 
 import com.mod.loan.model.DecisionPbDetail;
+import com.mod.loan.model.DecisionZmDetail;
 import com.mod.loan.model.User;
 import com.mod.loan.service.*;
 import lombok.extern.slf4j.Slf4j;
@@ -14,30 +15,39 @@ import java.util.Date;
  * loan-pay 2019/4/22 huijin.shuailijie Init
  */
 @Slf4j
-@RequestMapping("/qb")
 @RestController
 public class qbController {
 
     @Autowired
     private DecisionPbDetailService decisionPbDetailService;
+    @Autowired
+    private DecisionZmDetailService zmDetailService;
 
 
     @Autowired
     private UserService userService;
 
-    @RequestMapping(value = "/creditApply")
-    public String creditApply() throws Exception {
+    @RequestMapping(value = "/creditApplyPb")
+    public String creditApplyPb() throws Exception {
         User user =userService.selectByPrimaryKey((long)940);
         String orderNo="1665673124496871424";
         DecisionPbDetail decisionPbDetail = decisionPbDetailService.creditApply(user, orderNo);
         return String.valueOf(decisionPbDetail);
     }
 
-    @RequestMapping(value = "/queryCreditResult")
-    public String queryCreditResult() throws Exception {
+    @RequestMapping(value = "/queryCreditResultPb")
+    public String queryCreditResultPb() throws Exception {
         DecisionPbDetail detail = decisionPbDetailService.selectByPrimaryKey((long)282);
         DecisionPbDetail decisionPbDetail = decisionPbDetailService.queryCreditResult(detail);
         return String.valueOf(decisionPbDetail);
+    }
+
+    @RequestMapping(value = "/creditApplyZm")
+    public String creditApplyZm() throws Exception {
+        User user =userService.selectByPrimaryKey((long)940);
+        String orderNo="1665673124496871424";
+        DecisionZmDetail zmDetail = zmDetailService.creditApply(user, orderNo);
+        return String.valueOf(zmDetail);
     }
 
 

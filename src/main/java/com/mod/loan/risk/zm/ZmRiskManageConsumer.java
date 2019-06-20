@@ -41,7 +41,7 @@ public class ZmRiskManageConsumer {
     @Autowired
     private UserBankService userBankService;
     @Autowired
-    private DecisionPbDetailService decisionPbDetailService;
+    private DecisionZmDetailService zmDetailService;
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -52,7 +52,7 @@ public class ZmRiskManageConsumer {
     @Resource
     private CallBackRongZeService callBackRongZeService;
 
-    @RabbitListener(queues = "pb_queue_risk_order_notify", containerFactory = "pb_risk_order_notify")
+    @RabbitListener(queues = "zm_queue_risk_order_notify", containerFactory = "zm_risk_order_notify")
     @RabbitHandler
     public void risk_order_notify(Message mess) {
         RiskAuditMessage riskAuditMessage = JSONObject.parseObject(mess.getBody(), RiskAuditMessage.class);
@@ -103,13 +103,17 @@ public class ZmRiskManageConsumer {
         try {
             User user = userService.selectByPrimaryKey(uid);
             //开始请求2.2接口
-            DecisionPbDetail decisionPbDetail = decisionPbDetailService.creditApply(user, orderNo);
-            if (decisionPbDetail != null && PbResultEnum.DENY.getCode().equals(decisionPbDetail.getResult()) && "拒绝".equals(decisionPbDetail.getDesc())) {
+            DecisionZmDetail zmDetail = zmDetailService.creditApply(user, orderNo);
+            if (zmDetail != null && "-1".equals(zmDetail.getReturnCode())) {
                 //拒绝状态直接返回审批失败
-                callbackThird(orderUser, decisionPbDetail);
+                callbackThird(orderUser, zmDetail);
                 return;
             } else {
-                rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result_wait, riskAuditMessage);
+                if (riskAuditMessage.getTimes() < 6) {
+                    riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
+                    rabbitTemplate.convertAndSend(RabbitConst.zm_queue_risk_order_notify, riskAuditMessage);
+                    return;
+                }
             }
             log.info("风控,[notify]：结束");
         } catch (Exception e) {
@@ -123,7 +127,7 @@ public class ZmRiskManageConsumer {
             }
             if (riskAuditMessage.getTimes() < 6) {
                 riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
-                rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_notify, riskAuditMessage);
+                rabbitTemplate.convertAndSend(RabbitConst.zm_queue_risk_order_notify, riskAuditMessage);
                 return;
             }
             if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
@@ -132,19 +136,20 @@ public class ZmRiskManageConsumer {
                 orderService.updateOrderByRisk(order);
             } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
                 //融泽风控查询异常直接返回审批失败
-                DecisionPbDetail decisionPbDetail = new DecisionPbDetail();
-                decisionPbDetail.setResult(PbResultEnum.DENY.getCode());
-                decisionPbDetail.setDesc("拒绝");
-                decisionPbDetail.setOrderNo(riskAuditMessage.getOrderNo());
-                decisionPbDetail.setCreatetime(new Date());
-                decisionPbDetail.setUpdatetime(new Date());
-                decisionPbDetailService.insert(decisionPbDetail);
-                callbackThird(orderUser, decisionPbDetail);
+                DecisionZmDetail zmDetail = new DecisionZmDetail();
+                zmDetail.setReturnCode("-1");
+                zmDetail.setReturnInfo("fail");
+                zmDetail.setScore("0.0");
+                zmDetail.setOrderNo(riskAuditMessage.getOrderNo());
+                zmDetail.setCreatetime(new Date());
+                zmDetail.setUpdatetime(new Date());
+                zmDetailService.insert(zmDetail);
+                callbackThird(orderUser, zmDetail);
             }
         }
     }
 
-    @Bean("pb_risk_order_notify")
+    @Bean("zm_risk_order_notify")
     public SimpleRabbitListenerContainerFactory pointTaskContainerFactoryLoan(ConnectionFactory connectionFactory) {
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
@@ -153,7 +158,7 @@ public class ZmRiskManageConsumer {
         return factory;
     }
 
-    private void callbackThird(OrderUser orderUser, DecisionPbDetail risk) {
-        callBackRongZeService.pushRiskResultForPb(orderUser, risk.getCode(), risk.getDesc());
+    private void callbackThird(OrderUser orderUser, DecisionZmDetail risk) {
+        callBackRongZeService.pushRiskResultForZm(orderUser, risk.getReturnCode());
     }
 }

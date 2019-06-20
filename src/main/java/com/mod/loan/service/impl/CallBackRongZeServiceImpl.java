@@ -185,4 +185,76 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
         RongZeRequestUtil.doPost(Constant.rongZeCallbackUrl, "api.order.status", JSON.toJSONString(map));
     }
 
+
+    public void pushRiskResultForZm(OrderUser orderUser, String riskCodec) {
+        try {
+            if (orderUser == null || orderUser.getOrderNo() == null) {
+                return;
+            }
+            //推审批结
+            postRiskResultForZm(orderUser, riskCodec);
+
+        } catch (Exception e) {
+            log.error("给融泽推送风控审批结果失败: " + e.getMessage(), e);
+        }
+    }
+    private void postRiskResultForZm(OrderUser orderUser, String riskCode) throws Exception {
+        String orderNo = orderUser.getOrderNo();
+
+        String reapply = null; //是否可再次申请
+        String reapplyTime = null; //可再申请的时间
+        String remark = "审批中"; //拒绝原因
+
+        Long refuseTime = null; //审批拒绝时间
+        Long approvalTime = null; //审批通过时间
+        int conclusion = 30; //处理中
+        Integer proType = null; //单期产品
+        Integer amountType = null; //审批金额是否固定，0 - 固定
+        Integer termType = null; //审批期限是否固定，0 - 固定
+        Integer approvalAmount = null; //审批金额
+        Integer approvalTerm = null; //审批期限
+        Integer termUnit = null; //期限单位，1 - 天
+        String creditDeadline = null; //审批结果有效期，当前时间
+
+        if ("1".equals(riskCode)) {
+            //通过
+            conclusion = 10;
+            approvalTime = System.currentTimeMillis();
+            creditDeadline = DateFormatUtils.format(new Date(), "yyyy-MM-dd");
+            proType = 1; //单期产品
+            amountType = 0; //审批金额是否固定，0 - 固定
+            termType = 0; //审批期限是否固定，0 - 固定
+            approvalAmount = 1500; //审批金额
+            approvalTerm = 6; //审批期限
+            termUnit = 1; //期限单位，1 - 天
+            remark = "通过";
+        } else {
+            //拒绝
+            refuseTime = System.currentTimeMillis();
+            conclusion = 40;
+            remark = "拒绝" ;
+            reapply = "1";
+            reapplyTime = DateFormatUtils.format(refuseTime + (1000L * 3600 * 24 * 7), "yyyy-MM-dd");
+        }
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("order_no", orderNo);
+        map.put("conclusion", conclusion);
+        map.put("reapply", reapply);
+        map.put("reapplytime", reapplyTime);
+        map.put("remark", remark);
+        map.put("refuse_time", refuseTime);
+        map.put("approval_time", approvalTime);
+        map.put("pro_type", proType);
+        map.put("term_unit", termUnit);
+        map.put("amount_type", amountType);
+        map.put("term_type", termType);
+        map.put("approval_term", approvalTerm);
+        map.put("credit_deadline", creditDeadline);
+        map.put("approval_amount", approvalAmount);
+        RongZeRequestUtil.doPost(Constant.rongZeCallbackUrl, "api.audit.result", JSON.toJSONString(map));
+    }
+
+
+
 }
