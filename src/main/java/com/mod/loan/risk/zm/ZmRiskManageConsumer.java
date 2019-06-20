@@ -52,8 +52,8 @@ public class ZmRiskManageConsumer {
     @Resource
     private CallBackRongZeService callBackRongZeService;
 
-    @RabbitListener(queues = "zm_queue_risk_order_notify", containerFactory = "zm_risk_order_notify")
-    @RabbitHandler
+//    @RabbitListener(queues = "zm_queue_risk_order_notify", containerFactory = "zm_risk_order_notify")
+//    @RabbitHandler
     public void risk_order_notify(Message mess) {
         RiskAuditMessage riskAuditMessage = JSONObject.parseObject(mess.getBody(), RiskAuditMessage.class);
         log.info("风控信息,[notify]：" + riskAuditMessage.toString());

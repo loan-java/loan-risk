@@ -216,7 +216,7 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
         Integer termUnit = null; //期限单位，1 - 天
         String creditDeadline = null; //审批结果有效期，当前时间
 
-        if ("1".equals(riskCode)) {
+        if ("0".equals(riskCode)) {
             //通过
             conclusion = 10;
             approvalTime = System.currentTimeMillis();
