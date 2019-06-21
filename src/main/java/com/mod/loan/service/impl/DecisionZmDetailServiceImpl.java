@@ -63,7 +63,7 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
     public DecisionZmDetail creditApply(User user, String orderNo) throws Exception {
         DecisionZmDetail zmDetail = null;
         try {
-            String serials_no = String.format("%s%s%s", "p", new DateTime().toString(TimeUtils.dateformat5), user.getId());
+//            String serials_no = String.format("%s%s%s", "p", new DateTime().toString(TimeUtils.dateformat5), user.getId());
             //开始拼接数据
             String model_name = zmConfig.getModelName();
             String product = orderNo;
