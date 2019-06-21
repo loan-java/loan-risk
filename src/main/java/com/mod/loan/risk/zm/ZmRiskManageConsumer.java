@@ -2,7 +2,6 @@ package com.mod.loan.risk.zm;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.mod.loan.common.enums.PbResultEnum;
 import com.mod.loan.common.message.RiskAuditMessage;
 import com.mod.loan.config.rabbitmq.RabbitConst;
 import com.mod.loan.config.redis.RedisConst;
@@ -105,14 +104,21 @@ public class ZmRiskManageConsumer {
             //开始请求2.2接口
             DecisionZmDetail zmDetail = zmDetailService.creditApply(user, orderNo);
             if (zmDetail != null && "-1".equals(zmDetail.getReturnCode())) {
+                order.setStatus(ConstantUtils.rejectOrderStatus);
+                orderService.updateOrderByRisk(order);
                 //拒绝状态直接返回审批失败
                 callbackThird(orderUser, zmDetail);
-                return;
-            } else {
+            } else if (zmDetail != null && "0".equals(zmDetail.getReturnCode())) {
+                order.setStatus(ConstantUtils.agreeOrderStatus);
+                orderService.updateOrderByRisk(order);
+            }  else {
                 if (riskAuditMessage.getTimes() < 6) {
                     riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
                     rabbitTemplate.convertAndSend(RabbitConst.zm_queue_risk_order_notify, riskAuditMessage);
-                    return;
+                }else {
+                    //超过次数人工处理
+                    order.setStatus(ConstantUtils.unsettledOrderStatus);
+                    orderService.updateOrderByRisk(order);
                 }
             }
             log.info("风控,[notify]：结束");
