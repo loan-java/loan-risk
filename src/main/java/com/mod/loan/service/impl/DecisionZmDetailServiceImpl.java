@@ -138,14 +138,13 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
 
     //聚信立
     public JSONObject jxlOriginalData(String orderNo) {
-        JSONObject report = new JSONObject();
+        JSONObject report = null;
         try {
             JSONObject jsonObject1 = new JSONObject();
             jsonObject1.put("order_no", orderNo);
             jsonObject1.put("type", "1");
             for (int times = 0; times < 10 && report == null; times++) {
                 String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
-//                log.warn("原始运营商报告数据的融泽返回结果："+result);
                 //判断运营商数据
                 JSONObject jsonObject = JSONObject.parseObject(result);
                 if (jsonObject.containsKey("data")) {
@@ -160,22 +159,20 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
                 }
                 log.info(orderNo + "指迷原始运营商报告数据当前获取运营报告循环次数:{}", times);
             }
-//            log.warn("原始运营商报告数据:{},{}", orderNo, report == null ? null : report.toJSONString());
         } catch (Exception e) {
             log.error(orderNo + "指迷获取原始运营商报告数据出错", e);
         }
-        return report;
+        return report == null?new JSONObject():report;
     }
 
     public JSONObject jxlAccessReport(String orderNo) {
-        JSONObject report = new JSONObject();
+        JSONObject report = null;
         try {
             JSONObject jsonObject1 = new JSONObject();
             jsonObject1.put("order_no", orderNo);
             jsonObject1.put("type", "2");
             for (int times = 0; times < 10 && report == null; times++) {
                 String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
-//                log.warn("聚信立运营商报告数据的融泽返回结果："+result);
                 //判断运营商数据
                 JSONObject jsonObject = JSONObject.parseObject(result);
                 if (jsonObject.containsKey("data")) {
@@ -190,11 +187,10 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
                 }
                 log.info(orderNo + "指迷聚信立运营商报告数据当前获取运营报告循环次数:{}", times);
             }
-//            log.warn("聚信立运营商报告数据:{}, {}", orderNo, report == null ? null : report.toJSONString());
         } catch (Exception e) {
             log.error(orderNo + "指迷获取聚信立运营商报告数据出错", e);
         }
-        return report;
+        return report == null?new JSONObject():report;
     }
 
     //紧急联系人(至少2个)(必填)
