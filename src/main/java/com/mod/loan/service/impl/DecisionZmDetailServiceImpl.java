@@ -160,27 +160,6 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
                 }
                 log.info(orderNo + "指迷原始运营商报告数据当前获取运营报告循环次数:{}", times);
             }
-            if (report != null) {
-                if (report.containsKey("members")) {
-                    JSONObject members = report.getJSONObject("members");
-                    if (members.containsKey("transactions")) {
-                        JSONArray transactions = members.getJSONArray("transactions");
-                        if (transactions.size() > 0) {
-                            JSONObject transactionsJson = (JSONObject) transactions.get(0);
-                            if (transactionsJson.containsKey("smses")) {
-                                JSONArray smses = transactionsJson.getJSONArray("smses");
-                                int n = smses.size();
-                                for (int i = 0; i < n; i++) {
-                                    JSONObject smsesJson = (JSONObject) smses.get(i);
-                                    if (!smsesJson.containsKey("other_cell_phone") || smsesJson.get("other_cell_phone") == null) {
-                                        return null;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
 //            log.warn("原始运营商报告数据:{},{}", orderNo, report == null ? null : report.toJSONString());
         } catch (Exception e) {
             log.error(orderNo + "指迷获取原始运营商报告数据出错", e);
