@@ -78,8 +78,8 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
 //            String companyName = userInfo.getWorkCompany();
 //            String companyAddress = userInfo.getWorkAddress();
             Map<String, String> carrier_data = new HashMap<String, String>();
-            carrier_data.put("mx_report", JSON.toJSONString(jxlAccessReport(orderNo), SerializerFeature.WriteMapNullValue));
-            carrier_data.put("mx_raw", JSON.toJSONString(jxlOriginalData(orderNo), SerializerFeature.WriteMapNullValue));
+            carrier_data.put("jxl_report", JSON.toJSONString(jxlAccessReport(orderNo), SerializerFeature.WriteMapNullValue));
+            carrier_data.put("jxl_raw", JSON.toJSONString(jxlOriginalData(orderNo), SerializerFeature.WriteMapNullValue));
 
             ZhimiRiskRequest request = new ZhimiRiskRequest();
             request.setModel_name(model_name);
