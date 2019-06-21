@@ -80,6 +80,20 @@ public class Merchant {
 	@Column(name = "payment_type")
 	private String paymentType;
 
+	/**
+	 * 风控类型：1-新颜，2-盘，3-指迷
+	 */
+	@Column(name = "risk_type")
+	private Integer riskType;
+
+	public Integer getRiskType() {
+		return riskType;
+	}
+
+	public void setRiskType(Integer riskType) {
+		this.riskType = riskType;
+	}
+
 	public String getPaymentType() { return paymentType; }
 
 	public void setPaymentType(String paymentType) { this.paymentType = paymentType; }

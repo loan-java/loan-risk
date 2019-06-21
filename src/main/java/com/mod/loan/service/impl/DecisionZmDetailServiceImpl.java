@@ -126,12 +126,12 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
                    zmDetail.setCreatetime(new Date());
                    zmDetail.setUpdatetime(new Date());
                    zmDetailMapper.insert(zmDetail);
-                   log.info("=========拒绝状态直接返回审批失败,orderNo=" + orderNo + "===========");
+                   log.info("=========指迷拒绝状态直接返回审批失败,orderNo=" + orderNo + "===========");
                }
            }
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("订单请求出错", e);
+            log.error("指迷订单请求出错", e);
         }
         return zmDetail;
     }
@@ -158,7 +158,7 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
                         }
                     }
                 }
-                log.info(orderNo + "原始运营商报告数据当前获取运营报告循环次数:{}", times);
+                log.info(orderNo + "指迷原始运营商报告数据当前获取运营报告循环次数:{}", times);
             }
             if (report != null) {
                 if (report.containsKey("members")) {
@@ -183,7 +183,7 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
             }
 //            log.warn("原始运营商报告数据:{},{}", orderNo, report == null ? null : report.toJSONString());
         } catch (Exception e) {
-            log.error(orderNo + "获取原始运营商报告数据出错", e);
+            log.error(orderNo + "指迷获取原始运营商报告数据出错", e);
         }
         return report;
     }
@@ -209,11 +209,11 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
                         }
                     }
                 }
-                log.info(orderNo + "聚信立运营商报告数据当前获取运营报告循环次数:{}", times);
+                log.info(orderNo + "指迷聚信立运营商报告数据当前获取运营报告循环次数:{}", times);
             }
 //            log.warn("聚信立运营商报告数据:{}, {}", orderNo, report == null ? null : report.toJSONString());
         } catch (Exception e) {
-            log.error(orderNo + "获取聚信立运营商报告数据出错", e);
+            log.error(orderNo + "指迷获取聚信立运营商报告数据出错", e);
         }
         return report;
     }

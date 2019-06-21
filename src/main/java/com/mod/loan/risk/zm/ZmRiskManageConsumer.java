@@ -55,7 +55,7 @@ public class ZmRiskManageConsumer {
     @RabbitHandler
     public void risk_order_notify(Message mess) {
         RiskAuditMessage riskAuditMessage = JSONObject.parseObject(mess.getBody(), RiskAuditMessage.class);
-        log.info("风控信息,[notify]：" + riskAuditMessage.toString());
+        log.info("指迷风控信息,[notify]：" + riskAuditMessage.toString());
         Order order = null;
         OrderUser orderUser = null;
         Long uid = null;
@@ -64,15 +64,15 @@ public class ZmRiskManageConsumer {
         if (riskAuditMessage.getSource() == ConstantUtils.ZERO && riskAuditMessage.getOrderId() != null) {
             order = orderService.selectByPrimaryKey(riskAuditMessage.getOrderId());
             if (!redisMapper.lock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId(), 30)) {
-                log.error("风控消息重复，message={}", JSON.toJSONString(riskAuditMessage));
+                log.error("指迷风控消息重复，message={}", JSON.toJSONString(riskAuditMessage));
                 return;
             }
             if (order == null || order.getUid() == null || order.getOrderNo() == null) {
-                log.info("风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
+                log.info("指迷风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
                 return;
             }
             if (order.getStatus() != 11) { // 新建的订单才能进入风控模块
-                log.info("风控，无效的订单状态 message={}", JSON.toJSONString(riskAuditMessage));
+                log.info("指迷风控，无效的订单状态 message={}", JSON.toJSONString(riskAuditMessage));
                 return;
             }
             uid = order.getUid();
@@ -81,22 +81,26 @@ public class ZmRiskManageConsumer {
         } else if (riskAuditMessage.getSource() == ConstantUtils.ONE && riskAuditMessage.getOrderNo() != null) {
             orderUser = orderUserService.selectByOrderNo(riskAuditMessage.getOrderNo());
             if (!redisMapper.lock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderNo(), 30)) {
-                log.error("风控消息重复，message={}", JSON.toJSONString(riskAuditMessage));
+                log.error("指迷风控消息重复，message={}", JSON.toJSONString(riskAuditMessage));
                 return;
             }
             if (orderUser == null || orderUser.getUid() == null || orderUser.getOrderNo() == null) {
-                log.info("风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
+                log.info("指迷风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
                 return;
             }
             uid = orderUser.getUid();
             orderNo = orderUser.getOrderNo();
         } else {
-            log.error("风控消息错误，message={}", JSON.toJSONString(riskAuditMessage));
+            log.error("指迷风控消息错误，message={}", JSON.toJSONString(riskAuditMessage));
             return;
         }
         Merchant merchant = merchantService.findMerchantByAlias(riskAuditMessage.getMerchant());
         if (merchant == null) {
-            log.info("风控，无效的商户 message={}", riskAuditMessage.getMerchant());
+            log.info("指迷风控，无效的商户 message={}", riskAuditMessage.getMerchant());
+            return;
+        }
+        if (!"3".equals(merchant.getRiskType())) {
+            log.info("指迷风控，无效的风控类型 message={}", riskAuditMessage.getMerchant());
             return;
         }
         try {
@@ -121,11 +125,11 @@ public class ZmRiskManageConsumer {
                     orderService.updateOrderByRisk(order);
                 }
             }
-            log.info("风控,[notify]：结束");
+            log.info("指迷风控,[notify]：结束");
         } catch (Exception e) {
             //风控异常重新提交订单或者进入人工审核
-            log.error("风控异常{}", JSON.toJSONString(riskAuditMessage));
-            log.error("风控异常", e);
+            log.error("指迷风控异常{}", JSON.toJSONString(riskAuditMessage));
+            log.error("指迷风控异常", e);
             if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
                 redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId());
             } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
