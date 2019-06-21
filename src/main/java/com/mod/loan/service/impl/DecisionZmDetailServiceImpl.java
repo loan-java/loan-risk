@@ -138,7 +138,7 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
 
     //聚信立
     public JSONObject jxlOriginalData(String orderNo) {
-        JSONObject report = null;
+        JSONObject report = new JSONObject();
         try {
             JSONObject jsonObject1 = new JSONObject();
             jsonObject1.put("order_no", orderNo);
@@ -168,7 +168,7 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
     }
 
     public JSONObject jxlAccessReport(String orderNo) {
-        JSONObject report = null;
+        JSONObject report = new JSONObject();
         try {
             JSONObject jsonObject1 = new JSONObject();
             jsonObject1.put("order_no", orderNo);
