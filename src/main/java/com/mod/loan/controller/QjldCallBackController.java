@@ -49,7 +49,6 @@ public class QjldCallBackController {
     public String QjldPolicyCallBack(@RequestBody EngineResult<DecisionResDetailDTO> engineResult) {
         log.info("全景雷达异步查询回调接口");
         log.info("data数据：" + engineResult.getData().toString());
-        log.info("============================================================");
         if (engineResult == null || engineResult.getData() == null) {
             return ConstantUtils.FAIL;
         }
@@ -73,7 +72,7 @@ public class QjldCallBackController {
                 order.setStatus(ConstantUtils.unsettledOrderStatus);
                 orderService.updateOrderByRisk(order);
                 //支付类型为空的时候默认块钱的
-                log.info("放款类型：" + order.getPaymentType());
+                log.info("放款类型:{}", order.getPaymentType());
             } else if (PolicyResultEnum.UNSETTLED.getCode().equals(decisionResDetailDTO.getCode())) {
                 order.setStatus(ConstantUtils.unsettledOrderStatus);
                 orderService.updateOrderByRisk(order);
