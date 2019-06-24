@@ -32,7 +32,7 @@ public class RiskTest {
 
     @Test
     public void risk1() throws Exception {
-        User user =userService.selectByPrimaryKey((long)940);
+        User user =userService.selectByPrimaryKey((long)1);
         String orderNo="1665673124496871424";
         DecisionZmDetail zmDetail = zmDetailService.creditApply(user, orderNo);
         System.out.println(JSONObject.toJSONString(zmDetail));
