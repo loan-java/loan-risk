@@ -100,7 +100,7 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
                    String returnInfo = jsonObject.getString("return_info");
                    double score = jsonObject.getDouble("score");
                    //大于 560 才算通过
-                   if(560 > score){
+                   if(560 >= score){
                        returnCode = -1;
                        returnInfo="fail";
                    }
