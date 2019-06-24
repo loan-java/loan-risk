@@ -4,10 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.mod.loan.common.enums.PbResultEnum;
 import com.mod.loan.common.mapper.BaseServiceImpl;
 import com.mod.loan.config.Constant;
-import com.mod.loan.config.pb.PbConfig;
 import com.mod.loan.config.zm.ZmConfig;
 import com.mod.loan.mapper.*;
 import com.mod.loan.model.*;
@@ -15,11 +13,6 @@ import com.mod.loan.service.DecisionZmDetailService;
 import com.mod.loan.service.MerchantService;
 import com.mod.loan.service.OrderUserService;
 import com.mod.loan.util.DateUtil;
-import com.mod.loan.util.StringUtil;
-import com.mod.loan.util.TimeUtils;
-import com.mod.loan.util.pbUtil.PanbaoClient;
-import com.mod.loan.util.pbUtil.dto.request.ApplyWithCreditRequest;
-import com.mod.loan.util.pbUtil.dto.response.RiskResultResponse;
 import com.mod.loan.util.rongze.RongZeRequestUtil;
 import com.mod.loan.util.zmUtil.Contact;
 import com.mod.loan.util.zmUtil.EmergencyContact;
@@ -33,12 +26,10 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -104,28 +95,27 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
             log.info("=========指谜风控请求返回结果,orderNo=" + orderNo + "===========" + responseStr);
            if(!StringUtils.isEmpty(responseStr)){
                JSONObject jsonObject = JSONObject.parseObject(responseStr);
-               if(0 == jsonObject.getInteger("return_code")){
+               int returnCode = jsonObject.getInteger("return_code");
+               if( 0 == returnCode){
+                   String returnInfo = jsonObject.getString("return_info");
+                   double score = jsonObject.getDouble("score");
+                   //大于 560 才算通过
+                   if(560 > score){
+                       returnCode = -1;
+                       returnInfo="fail";
+                   }
                    zmDetail = new DecisionZmDetail();
-                   zmDetail.setReturnCode(String.valueOf(jsonObject.getInteger("return_code")));
-                   zmDetail.setReturnInfo(String.valueOf(jsonObject.getString("return_info")));
-                   zmDetail.setRequestId(String.valueOf(jsonObject.get("request_id")));
-                   zmDetail.setScore(String.valueOf(jsonObject.getInteger("score")));
+                   zmDetail.setReturnCode(String.valueOf(returnCode));
+                   zmDetail.setReturnInfo(returnInfo);
+                   zmDetail.setRequestId(jsonObject.getString("request_id"));
+                   zmDetail.setScore(String.valueOf(score));
                    zmDetail.setHistoryApply(jsonObject.getString("history_apply"));
                    zmDetail.setOrderNo(orderNo);
                    zmDetail.setCreatetime(new Date());
                    zmDetail.setUpdatetime(new Date());
                    zmDetailMapper.insert(zmDetail);
                }else{
-                   //拒绝状态直接返回审批失败
-                   zmDetail = new DecisionZmDetail();
-                   zmDetail.setReturnCode("-1");
-                   zmDetail.setReturnInfo("fail");
-                   zmDetail.setScore("0.0");
-                   zmDetail.setOrderNo(orderNo);
-                   zmDetail.setCreatetime(new Date());
-                   zmDetail.setUpdatetime(new Date());
-                   zmDetailMapper.insert(zmDetail);
-                   log.info("=========指迷拒绝状态直接返回审批失败,orderNo=" + orderNo + "===========");
+                   log.info("=========指谜风控请求返回异常结果信息，orderNo=" + orderNo + "===========" + responseStr);
                }
            }
         } catch (Exception e) {
