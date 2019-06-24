@@ -63,12 +63,11 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
     public DecisionZmDetail creditApply(User user, String orderNo) throws Exception {
         DecisionZmDetail zmDetail = null;
         try {
-//            String serials_no = String.format("%s%s%s", "p", new DateTime().toString(TimeUtils.dateformat5), user.getId());
             //开始拼接数据
             String model_name = zmConfig.getModelName();
-            String product = orderNo;
             Merchant merchant = merchantService.findMerchantByAlias(user.getMerchant());
             String channel = merchant == null ? user.getMerchant() : merchant.getMerchantName();
+
             OrderUser orderUser = orderUserService.selectByOrderNo(orderNo);
             String applyTime = DateUtil.dateToStrLong(orderUser.getCreateTime());
             String mobile = user.getUserPhone();
@@ -83,7 +82,7 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
 
             ZhimiRiskRequest request = new ZhimiRiskRequest();
             request.setModel_name(model_name);
-            request.setProduct(product);
+            request.setProduct(channel);
             request.setChannel(channel);
             request.setApply_time(applyTime);
             request.setMobile(mobile);
