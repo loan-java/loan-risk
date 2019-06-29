@@ -8,43 +8,43 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class QjldConfig {
-    @Value("${qjld.member.id}")
+    @Value("${qjld.member.id:}")
     private String qjldMemberId;
 
-    @Value("${qjld.terminal.id}")
+    @Value("${qjld.terminal.id:}")
     private String qjldTerminalId;
 
-    @Value("${qjld.key.path}")
+    @Value("${qjld.key.path:}")
     private String qjldKeyPath;
 
-    @Value("${qjld.key.pwd}")
+    @Value("${qjld.key.pwd:}")
     private String qjldKeyPwd;
 
 
-    @Value("${qjld.pub.key.path}")
+    @Value("${qjld.pub.key.path:}")
     private String qjldPubKeyPath;
 
 
-    @Value("${qjld.policy.url}")
+    @Value("${qjld.policy.url:}")
     private String qjldPolicyUrl;
 
 
-    @Value("${qjld.callback.url}")
+    @Value("${qjld.callback.url:}")
     private String qjldCallBackUrl;
 
 
-    @Value("${qjld.hetian.url}")
+    @Value("${qjld.hetian.url:}")
     private String qjldHeTianUrl;
 
-    @Value("${qjld.type}")
+    @Value("${qjld.type:}")
     private String qjldType;
 
 
-    @Value("${qjld.product.type}")
+    @Value("${qjld.product.type:}")
     private String qjldProductType;
 
 
-    @Value("${qjld.version}")
+    @Value("${qjld.version:}")
     private String qjldVersion;
 
     public String getQjldMemberId() {

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JuHeConfig {
 
-    @Value("${juhe.call.back.url}")
+    @Value("${juhe.call.back.url:}")
     private String juHeCallBackUrl;
 
 
