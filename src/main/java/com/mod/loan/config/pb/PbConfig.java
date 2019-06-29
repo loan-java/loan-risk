@@ -7,23 +7,23 @@ import org.springframework.stereotype.Component;
 @Component
 public class PbConfig {
 
-    @Value("${pb.merchant.id}")
+    @Value("${pb.merchant.id:}")
     private String merchantId;
 
-    @Value("${pb.version}")
+    @Value("${pb.version:}")
     private String version;
 
-    @Value("${pb.product.id}")
+    @Value("${pb.product.id:}")
     private String productId;
 
-    @Value("${pb.private.key}")
+    @Value("${pb.private.key:}")
     private String privateKey;
 
-    @Value("${pb.public.key}")
+    @Value("${pb.public.key:}")
     private String publicKey;
 
 
-    @Value("${pb.prev.host}")
+    @Value("${pb.prev.host:}")
     private String prevHost;
 
 
