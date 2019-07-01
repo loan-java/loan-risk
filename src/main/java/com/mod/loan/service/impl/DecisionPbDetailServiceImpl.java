@@ -45,8 +45,6 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
     @Autowired
     private PanbaoClient client;
     @Autowired
-    private RedisMapper redisMapper;
-    @Autowired
     private UserBankMapper userBankMapper;
     @Autowired
     private OrderMapper orderMapper;
