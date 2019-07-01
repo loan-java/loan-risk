@@ -99,6 +99,10 @@ public class PbRiskManageConsumer {
                 log.info("风控，无效的商户 message={}", riskAuditMessage.getMerchant());
                 return;
             }
+            if (!ConstantUtils.TWO.equals(merchant.getRiskType())) {
+                log.info("十露盘风控，无效的风控类型 message={}", riskAuditMessage.getMerchant());
+                return;
+            }
             User user = userService.selectByPrimaryKey(uid);
             //开始请求2.2接口
             DecisionPbDetail decisionPbDetail = decisionPbDetailService.creditApply(user, orderNo);
@@ -113,7 +117,7 @@ public class PbRiskManageConsumer {
                 }
                 return;
             } else {
-                if(decisionPbDetail == null){
+                if (decisionPbDetail == null) {
                     log.error("风控表数据新增失败，message={}", JSON.toJSONString(riskAuditMessage));
                     return;
                 }

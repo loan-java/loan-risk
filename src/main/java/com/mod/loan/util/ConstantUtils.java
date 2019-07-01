@@ -9,6 +9,8 @@ public class ConstantUtils {
     public final static String FAIL = "FAIL";
     public final static Integer ZERO = 0;
     public final static Integer ONE = 1;
+    public final static Integer TWO = 2;
+    public final static Integer THREE = 3;
 
     public final static Integer newOrderStatus = 11;//新建订单
     public final static Integer agreeOrderStatus = 22;//通过订单

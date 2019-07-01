@@ -99,7 +99,7 @@ public class ZmRiskManageConsumer {
             log.info("指迷风控，无效的商户 message={}", riskAuditMessage.getMerchant());
             return;
         }
-        if (!"3".equals(merchant.getRiskType())) {
+        if (!ConstantUtils.THREE.equals(merchant.getRiskType())) {
             log.info("指迷风控，无效的风控类型 message={}", riskAuditMessage.getMerchant());
             return;
         }
@@ -115,11 +115,11 @@ public class ZmRiskManageConsumer {
             } else if (zmDetail != null && "0".equals(zmDetail.getReturnCode())) {
                 order.setStatus(ConstantUtils.agreeOrderStatus);
                 orderService.updateOrderByRisk(order);
-            }  else {
+            } else {
                 if (riskAuditMessage.getTimes() < 6) {
                     riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
                     rabbitTemplate.convertAndSend(RabbitConst.zm_queue_risk_order_notify, riskAuditMessage);
-                }else {
+                } else {
                     //超过次数人工处理
                     order.setStatus(ConstantUtils.unsettledOrderStatus);
                     orderService.updateOrderByRisk(order);

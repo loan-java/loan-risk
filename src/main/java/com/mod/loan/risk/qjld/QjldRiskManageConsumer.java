@@ -109,6 +109,10 @@ public class QjldRiskManageConsumer {
             log.info("风控，无效的商户 message={}", riskAuditMessage.getMerchant());
             return;
         }
+        if (!ConstantUtils.ONE.equals(merchant.getRiskType())) {
+            log.info("新颜风控，无效的风控类型 message={}", riskAuditMessage.getMerchant());
+            return;
+        }
         try {
             UserBank userBank = userBankService.selectUserCurrentBankCard(riskAuditMessage.getUid());
             User user = userService.selectByPrimaryKey(riskAuditMessage.getUid());
