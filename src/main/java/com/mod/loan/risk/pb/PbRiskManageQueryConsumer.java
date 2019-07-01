@@ -37,13 +37,9 @@ public class PbRiskManageQueryConsumer {
     @Autowired
     private OrderUserService orderUserService;
     @Autowired
-    private UserService userService;
-    @Autowired
     private DecisionPbDetailService decisionPbDetailService;
     @Autowired
     private RabbitTemplate rabbitTemplate;
-    @Autowired
-    private CallBackJuHeService callBackJuHeService;
     @Resource
     private CallBackRongZeService callBackRongZeService;
 
