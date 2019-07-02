@@ -119,7 +119,7 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
                }
            }
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             log.error("指迷订单请求出错", e);
         }
         return zmDetail;

@@ -8,10 +8,7 @@ import com.mod.loan.common.mapper.BaseServiceImpl;
 import com.mod.loan.config.Constant;
 import com.mod.loan.config.pb.PbConfig;
 import com.mod.loan.config.redis.RedisMapper;
-import com.mod.loan.mapper.DecisionPbDetailMapper;
-import com.mod.loan.mapper.OrderMapper;
-import com.mod.loan.mapper.UserBankMapper;
-import com.mod.loan.mapper.UserInfoMapper;
+import com.mod.loan.mapper.*;
 import com.mod.loan.model.*;
 import com.mod.loan.service.DecisionPbDetailService;
 import com.mod.loan.service.MerchantService;
@@ -31,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -57,13 +55,33 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
     @Autowired
     private MerchantService merchantService;
 
+    @Resource
+    private MerchantRateMapper merchantRateMapper;
+
     //2.2接口调用
     @Override
     public DecisionPbDetail creditApply(User user, String orderNo) throws Exception {
-        OrderUser orderUser = orderUserService.selectByOrderNo(orderNo);
         DecisionPbDetail decisionPbDetail = null;
-        Merchant merchant = merchantService.findMerchantByAlias(user.getMerchant());
         try {
+            OrderUser orderUser = orderUserService.selectByOrderNo(orderNo);
+            Merchant merchant = merchantService.findMerchantByAlias(user.getMerchant());
+            //是否存在关联的借贷信息
+            if(orderUser.getMerchantRateId() == null){
+                throw new Exception("十路盘风控查询:商户不存在Order关联的借贷信息");
+            }
+            MerchantRate merchantRate = merchantRateMapper.selectByPrimaryKey(orderUser.getMerchantRateId());
+            if(merchantRate == null){
+                throw new Exception("十路盘风控查询:商户不存在默认的借贷信息");
+            }
+            BigDecimal approvalAmount1 = merchantRate.getProductMoney(); //审批金额
+            if(approvalAmount1 == null) {
+                throw new Exception("十路盘风控查询:商户不存在默认借贷金额");
+            }
+            Integer approvalTerm1 = merchantRate.getProductDay(); //审批期限
+            if(approvalTerm1 == null) {
+                throw new Exception("十路盘风控查询:商户不存在默认借贷期限");
+            }
+
             UserInfo userInfo = userInfoMapper.selectByPrimaryKey(user.getId());
             //开始拼接数据
             String times = new DateTime().toString(TimeUtils.dateformat5);
@@ -111,8 +129,8 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                 riskData.put("renew_loan", "1");
             }
             riskData.put("installment", "1");//期次
-            String approvalAmount = "1500"; //审批金额
-            String approvalTerm = "6"; //审批期限
+            String approvalAmount = String.valueOf(approvalAmount1.intValue()); //审批金额
+            String approvalTerm = String.valueOf(approvalTerm1.intValue()); //审批期限
             String termUnit = "1"; //期限单位，1 - 天
             riskData.put("apply_amount", approvalAmount);
             riskData.put("apply_time", orderUser.getCreateTime());
@@ -177,7 +195,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                 pbDetailMapper.insert(decisionPbDetail);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             log.error("订单请求出错", e);
         }
         return decisionPbDetail;
