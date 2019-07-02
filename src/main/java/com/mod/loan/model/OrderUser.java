@@ -85,6 +85,8 @@ public class OrderUser {
                 ", uid=" + uid +
                 ", createTime=" + createTime +
                 ", source=" + source +
+                ", merchantRateId=" + merchantRateId +
                 '}';
     }
+
 }

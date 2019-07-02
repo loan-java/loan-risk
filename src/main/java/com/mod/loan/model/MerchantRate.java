@@ -319,4 +319,25 @@ public class MerchantRate {
     public void setBorrowType(Integer borrowType) {
         this.borrowType = borrowType;
     }
+
+
+    @Override
+    public String toString() {
+        return "MerchantRate{" +
+                "id=" + id +
+                ", productName='" + productName + '\'' +
+                ", productDay=" + productDay +
+                ", productMoney=" + productMoney +
+                ", productLevel=" + productLevel +
+                ", productRate=" + productRate +
+                ", productStatus=" + productStatus +
+                ", totalRate=" + totalRate +
+                ", overdueRate=" + overdueRate +
+                ", createTime=" + createTime +
+                ", updateTime=" + updateTime +
+                ", merchant='" + merchant + '\'' +
+                ", productType=" + productType +
+                ", borrowType=" + borrowType +
+                '}';
+    }
 }

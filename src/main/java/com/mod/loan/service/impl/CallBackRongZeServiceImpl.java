@@ -86,7 +86,7 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
         if (PolicyResultEnum.isAgree(riskCode)) {
             //是否存在关联的借贷信息
             if(orderUser.getMerchantRateId() == null){
-                throw new Exception("审批结论推送:商户不存在Order关联的借贷信息");
+                throw new Exception("审批结论推送:商户不存在Order关联的借贷信息" + orderUser.toString());
             }
             MerchantRate merchantRate = merchantRateMapper.selectByPrimaryKey(orderUser.getMerchantRateId());
             if(merchantRate == null){
@@ -94,11 +94,11 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
             }
             BigDecimal approvalAmount1 = merchantRate.getProductMoney(); //审批金额
             if(approvalAmount1 == null) {
-                throw new Exception("审批结论推送:商户不存在默认借贷金额");
+                throw new Exception("审批结论推送:商户不存在默认借贷金额" + merchantRate.toString());
             }
             Integer approvalTerm1 = merchantRate.getProductDay(); //审批期限
             if(approvalTerm1 == null) {
-                throw new Exception("审批结论推送:商户不存在默认借贷期限");
+                throw new Exception("审批结论推送:商户不存在默认借贷期限" + merchantRate.toString());
             }
             approvalAmount = approvalAmount1.intValue(); //审批金额
             approvalTerm = approvalTerm1.intValue(); //审批期限
@@ -163,7 +163,7 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
         if (PbResultEnum.isAPPROVE(riskCode)) {
             //是否存在关联的借贷信息
             if(orderUser.getMerchantRateId() == null){
-                throw new Exception("审批结论推送:商户不存在Order关联的借贷信息");
+                throw new Exception("审批结论推送:商户不存在Order关联的借贷信息" + orderUser.toString());
             }
             MerchantRate merchantRate = merchantRateMapper.selectByPrimaryKey(orderUser.getMerchantRateId());
             if(merchantRate == null){
@@ -171,11 +171,11 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
             }
             BigDecimal approvalAmount1 = merchantRate.getProductMoney(); //审批金额
             if(approvalAmount1 == null) {
-                throw new Exception("审批结论推送:商户不存在默认借贷金额");
+                throw new Exception("审批结论推送:商户不存在默认借贷金额" + merchantRate.toString());
             }
             Integer approvalTerm1 = merchantRate.getProductDay(); //审批期限
             if(approvalTerm1 == null) {
-                throw new Exception("审批结论推送:商户不存在默认借贷期限");
+                throw new Exception("审批结论推送:商户不存在默认借贷期限" + merchantRate.toString());
             }
             approvalAmount = approvalAmount1.intValue(); //审批金额
             approvalTerm = approvalTerm1.intValue(); //审批期限
@@ -254,7 +254,7 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
         if ("0".equals(riskCode)) {
             //是否存在关联的借贷信息
             if(orderUser.getMerchantRateId() == null){
-                throw new Exception("审批结论推送:商户不存在Order关联的借贷信息");
+                throw new Exception("审批结论推送:商户不存在Order关联的借贷信息" + orderUser.toString());
             }
             MerchantRate merchantRate = merchantRateMapper.selectByPrimaryKey(orderUser.getMerchantRateId());
             if(merchantRate == null){
@@ -262,11 +262,11 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
             }
             BigDecimal approvalAmount1 = merchantRate.getProductMoney(); //审批金额
             if(approvalAmount1 == null) {
-                throw new Exception("审批结论推送:商户不存在默认借贷金额");
+                throw new Exception("审批结论推送:商户不存在默认借贷金额" + merchantRate.toString());
             }
             Integer approvalTerm1 = merchantRate.getProductDay(); //审批期限
             if(approvalTerm1 == null) {
-                throw new Exception("审批结论推送:商户不存在默认借贷期限");
+                throw new Exception("审批结论推送:商户不存在默认借贷期限" + merchantRate.toString());
             }
             approvalAmount = approvalAmount1.intValue(); //审批金额
             approvalTerm = approvalTerm1.intValue(); //审批期限
