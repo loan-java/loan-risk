@@ -75,30 +75,30 @@ public class QjldRiskManageQueryConsumer {
     @RabbitHandler
     public void risk_order_query(Message mess) {
         QjldOrderIdMessage qjldOrderIdMessage = JSONObject.parseObject(mess.getBody(), QjldOrderIdMessage.class);
-        log.info("风控订单,[result]：" + qjldOrderIdMessage.toString());
         Order order = null;
         OrderUser orderUser = null;
-        if (qjldOrderIdMessage.getSource() == ConstantUtils.ZERO && qjldOrderIdMessage.getOrderId() != null) {
-            order = orderService.selectByPrimaryKey(qjldOrderIdMessage.getOrderId());
-            if (order == null) {
-                log.info("风控查询订单，订单不存在 message={}", JSON.toJSONString(qjldOrderIdMessage));
-                return;
-            }
-            if (order.getStatus() != ConstantUtils.newOrderStatus) { // 没有完成订单才能进入风控查询模块
-                log.info("风控查询订单，订单已完成风控查询，message={}", JSON.toJSONString(qjldOrderIdMessage));
-                return;
-            }
-        } else if (qjldOrderIdMessage.getSource() == ConstantUtils.ONE && qjldOrderIdMessage.getOrderNo() != null) {
-            orderUser = orderUserService.selectByOrderNo(qjldOrderIdMessage.getOrderNo());
-            if (orderUser == null) {
-                log.info("风控查询订单，订单不存在 message={}", JSON.toJSONString(qjldOrderIdMessage));
-                return;
-            }
-        } else {
-            log.error("风控查询消息错误，message={}", JSON.toJSONString(qjldOrderIdMessage));
-            return;
-        }
         try {
+            log.info("新颜风控订单,[result]：" + qjldOrderIdMessage.toString());
+            if (qjldOrderIdMessage.getSource() == ConstantUtils.ZERO && qjldOrderIdMessage.getOrderId() != null) {
+                order = orderService.selectByPrimaryKey(qjldOrderIdMessage.getOrderId());
+                if (order == null) {
+                    log.error("新颜风控查询订单，订单不存在 message={}", JSON.toJSONString(qjldOrderIdMessage));
+                    return;
+                }
+                if (order.getStatus() != ConstantUtils.newOrderStatus) { // 没有完成订单才能进入风控查询模块
+                    log.error("新颜风控查询订单，订单已完成风控查询，message={}", JSON.toJSONString(qjldOrderIdMessage));
+                    return;
+                }
+            } else if (qjldOrderIdMessage.getSource() == ConstantUtils.ONE && qjldOrderIdMessage.getOrderNo() != null) {
+                orderUser = orderUserService.selectByOrderNo(qjldOrderIdMessage.getOrderNo());
+                if (orderUser == null) {
+                    log.error("新颜风控查询订单，订单不存在 message={}", JSON.toJSONString(qjldOrderIdMessage));
+                    return;
+                }
+            } else {
+                log.error("新颜风控查询消息错误，message={}", JSON.toJSONString(qjldOrderIdMessage));
+                return;
+            }
             DecisionResDetailDTO decisionResDetailDTO = qjldPolicyService.qjldPolicQuery(qjldOrderIdMessage.getTransId());
             if (decisionResDetailDTO == null || OrderStatusEnum.INIT.getCode().equals(decisionResDetailDTO.getOrderStatus()) || OrderStatusEnum.WAIT.getCode().equals(decisionResDetailDTO.getOrderStatus())) {
                 qjldOrderIdMessage.setTimes(qjldOrderIdMessage.getTimes() + 1);
@@ -117,7 +117,7 @@ public class QjldRiskManageQueryConsumer {
                     order.setStatus(ConstantUtils.unsettledOrderStatus);
                     orderService.updateOrderByRisk(order);
                     //支付类型为空的时候默认块钱的
-                    log.info("放款类型:{}", order.getPaymentType());
+                    log.info("新颜放款类型:{}", order.getPaymentType());
                 } else if (PolicyResultEnum.UNSETTLED.getCode().equals(decisionResDetailDTO.getCode())) {
                     order.setStatus(ConstantUtils.unsettledOrderStatus);
                     orderService.updateOrderByRisk(order);
@@ -129,31 +129,35 @@ public class QjldRiskManageQueryConsumer {
             } else if (qjldOrderIdMessage.getSource() == ConstantUtils.ONE) {
                 callbackThird(orderUser, decisionResDetailDTO);
             }
-            log.info("分控订单,[result]：结束");
+            log.info("新颜分控订单,[result]：结束");
         } catch (Exception e) {
             //风控异常重新提交订单或者进入人工审核
-            log.error("风控订单查询异常{}", JSON.toJSONString(qjldOrderIdMessage));
-            log.error("风控订单查询异常{}", e);
+            log.error("新颜风控订单查询异常{}", JSON.toJSONString(qjldOrderIdMessage));
+            log.error("新颜风控订单查询异常", e);
             if (qjldOrderIdMessage.getTimes() < 6) {
                 qjldOrderIdMessage.setTimes(qjldOrderIdMessage.getTimes() + 1);
                 rabbitTemplate.convertAndSend(RabbitConst.qjld_queue_risk_order_result_wait, qjldOrderIdMessage);
                 return;
             }
-            if (qjldOrderIdMessage.getSource() == ConstantUtils.ZERO) {
-                //聚合风控查询异常直接转入人工审核
-                order.setStatus(ConstantUtils.unsettledOrderStatus);
-                orderService.updateOrderByRisk(order);
-            } else if (qjldOrderIdMessage.getSource() == ConstantUtils.ONE) {
-                //融泽风控查询异常直接返回审批失败 更新风控表
-                DecisionResDetailDTO decisionRes = new DecisionResDetailDTO();
-                decisionRes.setTrans_id(qjldOrderIdMessage.getTransId());
-                decisionRes.setOrderStatus("FAIL");
-                decisionRes.setCode(PolicyResultEnum.REJECT.getCode());
-                decisionRes.setDesc("拒绝");
-                TbDecisionResDetail resDetail = new TbDecisionResDetail(decisionRes);
-                resDetail.setCreatetime(new Date());
-                decisionResDetailService.updateByTransId(resDetail);
-                callbackThird(orderUser, decisionRes);
+            try {
+                if (qjldOrderIdMessage.getSource() == ConstantUtils.ZERO) {
+                    //聚合风控查询异常直接转入人工审核
+                    order.setStatus(ConstantUtils.unsettledOrderStatus);
+                    orderService.updateOrderByRisk(order);
+                } else if (qjldOrderIdMessage.getSource() == ConstantUtils.ONE) {
+                    //融泽风控查询异常直接返回审批失败 更新风控表
+                    DecisionResDetailDTO decisionRes = new DecisionResDetailDTO();
+                    decisionRes.setTrans_id(qjldOrderIdMessage.getTransId());
+                    decisionRes.setOrderStatus("FAIL");
+                    decisionRes.setCode(PolicyResultEnum.REJECT.getCode());
+                    decisionRes.setDesc("拒绝");
+                    TbDecisionResDetail resDetail = new TbDecisionResDetail(decisionRes);
+                    resDetail.setCreatetime(new Date());
+                    decisionResDetailService.updateByTransId(resDetail);
+                    callbackThird(orderUser, decisionRes);
+                }
+            }catch (Exception e1) {
+                log.error("新颜风控订单查询异常2", e);
             }
         }
     }
