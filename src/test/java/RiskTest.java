@@ -38,5 +38,11 @@ public class RiskTest {
         System.out.println(JSONObject.toJSONString(zmDetail));
     }
 
+    @Test
+    public void risk2() {
+        DecisionZmDetail  zmDetail = zmDetailService.selectByOrderNo("1665673124496871424");
+        System.out.println(JSONObject.toJSONString(zmDetail));
+    }
+
 
 }

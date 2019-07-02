@@ -107,7 +107,10 @@ public class ZmRiskManageConsumer {
 
             User user = userService.selectByPrimaryKey(uid);
             log.info("指迷风控,[notify]：开始请求接口=================" + orderNo);
-            DecisionZmDetail zmDetail = zmDetailService.creditApply(user, orderNo);
+            DecisionZmDetail  zmDetail = zmDetailService.selectByOrderNo(riskAuditMessage.getOrderNo());
+            if(zmDetail == null) {
+                zmDetail = zmDetailService.creditApply(user, orderNo);
+            }
             if(zmDetail == null){
                 if (riskAuditMessage.getTimes() < 6) {
                     riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
@@ -141,7 +144,6 @@ public class ZmRiskManageConsumer {
                         orderService.updateOrderByRisk(order);
                     }
                 } else if(riskAuditMessage.getSource() == ConstantUtils.ONE){
-                    //拒绝状态直接返回审批失败
                     callbackThird(orderUser, zmDetail);
                 }
             }
@@ -154,21 +156,26 @@ public class ZmRiskManageConsumer {
                 riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
                 rabbitTemplate.convertAndSend(RabbitConst.zm_queue_risk_order_notify, riskAuditMessage);
             }else{
-                if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
-                    //聚合风控下单异常直接转入人工审核
-                    order.setStatus(ConstantUtils.unsettledOrderStatus);
-                    orderService.updateOrderByRisk(order);
-                } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
-                    //融泽风控查询异常直接返回审批失败
-                    DecisionZmDetail zmDetail = new DecisionZmDetail();
-                    zmDetail.setReturnCode("-1");
-                    zmDetail.setReturnInfo("fail");
-                    zmDetail.setScore("0.0");
-                    zmDetail.setOrderNo(riskAuditMessage.getOrderNo());
-                    zmDetail.setCreatetime(new Date());
-                    zmDetail.setUpdatetime(new Date());
-                    zmDetailService.insert(zmDetail);
-                    callbackThird(orderUser, zmDetail);
+                try {
+                    if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
+                        //聚合风控下单异常直接转入人工审核
+                        order.setStatus(ConstantUtils.unsettledOrderStatus);
+                        orderService.updateOrderByRisk(order);
+                    } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
+                        DecisionZmDetail  zmDetail = zmDetailService.selectByOrderNo(riskAuditMessage.getOrderNo());
+                        if(zmDetail == null) {
+                            zmDetail = new DecisionZmDetail();zmDetail.setReturnCode("-1");
+                            zmDetail.setReturnInfo("fail");
+                            zmDetail.setScore("0.0");
+                            zmDetail.setOrderNo(riskAuditMessage.getOrderNo());
+                            zmDetail.setCreatetime(new Date());
+                            zmDetail.setUpdatetime(new Date());
+                            zmDetailService.insert(zmDetail);
+                        }
+                        callbackThird(orderUser, zmDetail);
+                    }
+                }catch (Exception e1) {
+                    log.error("指迷风控异常2", e1);
                 }
             }
         }finally {

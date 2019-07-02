@@ -243,7 +243,7 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
 
 
     @Override
-    public DecisionZmDetail selectByOrderNo(String orderNo) throws Exception {
+    public DecisionZmDetail selectByOrderNo(String orderNo) {
         return zmDetailMapper.selectByOrderNo(orderNo);
     }
 

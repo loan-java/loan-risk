@@ -12,6 +12,6 @@ public interface DecisionZmDetailService extends BaseService<DecisionZmDetail, L
 
     DecisionZmDetail creditApply(User user, String orderNo) throws Exception;
 
-    DecisionZmDetail selectByOrderNo(String orderNo) throws Exception;
+    DecisionZmDetail selectByOrderNo(String orderNo);
 
 }
