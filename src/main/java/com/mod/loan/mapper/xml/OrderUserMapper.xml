@@ -8,6 +8,7 @@
         <result column="uid" jdbcType="BIGINT" property="uid"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="source" jdbcType="INTEGER" property="source"/>
+        <result column="merchant_rate_id" jdbcType="INTEGER" property="merchantRateId"/>
     </resultMap>
 
     <select id="selectByOrderNo" resultMap="BaseResultMap">

@@ -31,6 +31,20 @@ public class OrderUser {
     @Column(name = "source")
     private Integer source;
 
+    /**
+     * 借款信息id
+     */
+    @Column(name = "merchant_rate_id")
+    private Long merchantRateId;
+
+    public Long getMerchantRateId() {
+        return merchantRateId;
+    }
+
+    public void setMerchantRateId(Long merchantRateId) {
+        this.merchantRateId = merchantRateId;
+    }
+
     public String getOrderNo() {
         return orderNo;
     }

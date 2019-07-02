@@ -4,9 +4,10 @@ import com.alibaba.fastjson.JSON;
 import com.mod.loan.common.enums.PbResultEnum;
 import com.mod.loan.common.enums.PolicyResultEnum;
 import com.mod.loan.config.Constant;
+import com.mod.loan.mapper.MerchantRateMapper;
+import com.mod.loan.model.MerchantRate;
 import com.mod.loan.model.OrderUser;
 import com.mod.loan.service.CallBackRongZeService;
-import com.mod.loan.service.OrderService;
 import com.mod.loan.util.rongze.RongZeRequestUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -14,6 +15,7 @@ import org.apache.commons.lang.time.DateFormatUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,8 +26,7 @@ import java.util.Map;
 public class CallBackRongZeServiceImpl implements CallBackRongZeService {
 
     @Resource
-    private OrderService orderService;
-
+    private MerchantRateMapper merchantRateMapper;
 
     @Override
     public void pushRiskResultForQjld(OrderUser orderUser, String riskCode, String riskDesc) {
@@ -83,6 +84,25 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
         String creditDeadline = null; //审批结果有效期，当前时间
 
         if (PolicyResultEnum.isAgree(riskCode)) {
+            //是否存在关联的借贷信息
+            if(orderUser.getMerchantRateId() == null){
+                throw new Exception("审批结论推送:商户不存在Order关联的借贷信息");
+            }
+            MerchantRate merchantRate = merchantRateMapper.selectByPrimaryKey(orderUser.getMerchantRateId());
+            if(merchantRate == null){
+                throw new Exception("审批结论推送:商户不存在默认的借贷信息");
+            }
+            BigDecimal approvalAmount1 = merchantRate.getProductMoney(); //审批金额
+            if(approvalAmount1 == null) {
+                throw new Exception("审批结论推送:商户不存在默认借贷金额");
+            }
+            Integer approvalTerm1 = merchantRate.getProductDay(); //审批期限
+            if(approvalTerm1 == null) {
+                throw new Exception("审批结论推送:商户不存在默认借贷期限");
+            }
+            approvalAmount = approvalAmount1.intValue(); //审批金额
+            approvalTerm = approvalTerm1.intValue(); //审批期限
+
             //通过
             conclusion = 10;
             approvalTime = System.currentTimeMillis();
@@ -90,8 +110,6 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
             proType = 1; //单期产品
             amountType = 0; //审批金额是否固定，0 - 固定
             termType = 0; //审批期限是否固定，0 - 固定
-            approvalAmount = 1500; //审批金额
-            approvalTerm = 6; //审批期限
             termUnit = 1; //期限单位，1 - 天
             remark = "通过";
         } else {
@@ -143,6 +161,25 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
         String creditDeadline = null; //审批结果有效期，当前时间
 
         if (PbResultEnum.isAPPROVE(riskCode)) {
+            //是否存在关联的借贷信息
+            if(orderUser.getMerchantRateId() == null){
+                throw new Exception("审批结论推送:商户不存在Order关联的借贷信息");
+            }
+            MerchantRate merchantRate = merchantRateMapper.selectByPrimaryKey(orderUser.getMerchantRateId());
+            if(merchantRate == null){
+                throw new Exception("审批结论推送:商户不存在默认的借贷信息");
+            }
+            BigDecimal approvalAmount1 = merchantRate.getProductMoney(); //审批金额
+            if(approvalAmount1 == null) {
+                throw new Exception("审批结论推送:商户不存在默认借贷金额");
+            }
+            Integer approvalTerm1 = merchantRate.getProductDay(); //审批期限
+            if(approvalTerm1 == null) {
+                throw new Exception("审批结论推送:商户不存在默认借贷期限");
+            }
+            approvalAmount = approvalAmount1.intValue(); //审批金额
+            approvalTerm = approvalTerm1.intValue(); //审批期限
+
             //通过
             conclusion = 10;
             approvalTime = System.currentTimeMillis();
@@ -150,8 +187,6 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
             proType = 1; //单期产品
             amountType = 0; //审批金额是否固定，0 - 固定
             termType = 0; //审批期限是否固定，0 - 固定
-            approvalAmount = 1500; //审批金额
-            approvalTerm = 6; //审批期限
             termUnit = 1; //期限单位，1 - 天
             remark = "通过";
         } else {
@@ -217,6 +252,25 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
         String creditDeadline = null; //审批结果有效期，当前时间
 
         if ("0".equals(riskCode)) {
+            //是否存在关联的借贷信息
+            if(orderUser.getMerchantRateId() == null){
+                throw new Exception("审批结论推送:商户不存在Order关联的借贷信息");
+            }
+            MerchantRate merchantRate = merchantRateMapper.selectByPrimaryKey(orderUser.getMerchantRateId());
+            if(merchantRate == null){
+                throw new Exception("审批结论推送:商户不存在默认的借贷信息");
+            }
+            BigDecimal approvalAmount1 = merchantRate.getProductMoney(); //审批金额
+            if(approvalAmount1 == null) {
+                throw new Exception("审批结论推送:商户不存在默认借贷金额");
+            }
+            Integer approvalTerm1 = merchantRate.getProductDay(); //审批期限
+            if(approvalTerm1 == null) {
+                throw new Exception("审批结论推送:商户不存在默认借贷期限");
+            }
+            approvalAmount = approvalAmount1.intValue(); //审批金额
+            approvalTerm = approvalTerm1.intValue(); //审批期限
+
             //通过
             conclusion = 10;
             approvalTime = System.currentTimeMillis();
@@ -224,8 +278,6 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
             proType = 1; //单期产品
             amountType = 0; //审批金额是否固定，0 - 固定
             termType = 0; //审批期限是否固定，0 - 固定
-            approvalAmount = 1500; //审批金额
-            approvalTerm = 6; //审批期限
             termUnit = 1; //期限单位，1 - 天
             remark = "通过";
         } else {
@@ -254,7 +306,5 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
         map.put("approval_amount", approvalAmount);
         RongZeRequestUtil.doPost(Constant.rongZeCallbackUrl, "api.audit.result", JSON.toJSONString(map));
     }
-
-
 
 }
