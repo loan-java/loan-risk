@@ -452,7 +452,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
     }
 
     @Override
-    public DecisionPbDetail selectByOrderNo(String orderNo) throws Exception {
+    public DecisionPbDetail selectByOrderNo(String orderNo) {
         return pbDetailMapper.selectByOrderNo(orderNo);
     }
 

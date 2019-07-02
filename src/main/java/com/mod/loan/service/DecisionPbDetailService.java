@@ -16,5 +16,5 @@ public interface DecisionPbDetailService extends BaseService<DecisionPbDetail, L
     //2.3接口调用
     DecisionPbDetail queryCreditResult(DecisionPbDetail detail) throws Exception;
 
-    DecisionPbDetail selectByOrderNo(String orderNo) throws Exception;
+    DecisionPbDetail selectByOrderNo(String orderNo);
 }

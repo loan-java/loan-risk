@@ -54,25 +54,25 @@ public class PbRiskManageConsumer {
     @RabbitHandler
     public void risk_order_notify(Message mess) {
         RiskAuditMessage riskAuditMessage = JSONObject.parseObject(mess.getBody(), RiskAuditMessage.class);
-        log.info("风控信息,[notify]：" + riskAuditMessage.toString());
         Order order = null;
         OrderUser orderUser = null;
         Long uid = null;
         String orderNo = null;
         try {
+            log.info("十露盘风控信息,[notify]：" +  JSON.toJSONString(riskAuditMessage));
             //聚合订单校验
             if (riskAuditMessage.getSource() == ConstantUtils.ZERO && riskAuditMessage.getOrderId() != null) {
                 order = orderService.selectByPrimaryKey(riskAuditMessage.getOrderId());
                 if (!redisMapper.lock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId(), 30)) {
-                    log.error("风控消息重复，message={}", JSON.toJSONString(riskAuditMessage));
+                    log.error("十露盘风控消息重复，message={}", JSON.toJSONString(riskAuditMessage));
                     return;
                 }
                 if (order == null || order.getUid() == null || order.getOrderNo() == null) {
-                    log.info("风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
+                    log.error("十露盘风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
                     return;
                 }
                 if (order.getStatus() != 11) { // 新建的订单才能进入风控模块
-                    log.info("风控，无效的订单状态 message={}", JSON.toJSONString(riskAuditMessage));
+                    log.error("十露盘风控，无效的订单状态 message={}", JSON.toJSONString(riskAuditMessage));
                     return;
                 }
                 uid = order.getUid();
@@ -81,31 +81,35 @@ public class PbRiskManageConsumer {
             } else if (riskAuditMessage.getSource() == ConstantUtils.ONE && riskAuditMessage.getOrderNo() != null) {
                 orderUser = orderUserService.selectByOrderNo(riskAuditMessage.getOrderNo());
                 if (!redisMapper.lock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderNo(), 30)) {
-                    log.error("风控消息重复，message={}", JSON.toJSONString(riskAuditMessage));
+                    log.error("十露盘风控消息重复，message={}", JSON.toJSONString(riskAuditMessage));
                     return;
                 }
                 if (orderUser == null || orderUser.getUid() == null || orderUser.getOrderNo() == null) {
-                    log.info("风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
+                    log.error("十露盘风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
                     return;
                 }
                 uid = orderUser.getUid();
                 orderNo = orderUser.getOrderNo();
             } else {
-                log.error("风控消息错误，message={}", JSON.toJSONString(riskAuditMessage));
+                log.error("十露盘风控消息错误，message={}", JSON.toJSONString(riskAuditMessage));
                 return;
             }
             Merchant merchant = merchantService.findMerchantByAlias(riskAuditMessage.getMerchant());
             if (merchant == null) {
-                log.info("风控，无效的商户 message={}", riskAuditMessage.getMerchant());
+                log.error("十露盘风控，无效的商户 message={}", riskAuditMessage.getMerchant());
                 return;
             }
             if (!ConstantUtils.TWO.equals(merchant.getRiskType())) {
-                log.info("十露盘风控，无效的风控类型 message={}", riskAuditMessage.getMerchant());
+                log.error("十露盘风控，无效的风控类型 message={}", riskAuditMessage.getMerchant());
                 return;
             }
             User user = userService.selectByPrimaryKey(uid);
             //开始请求2.2接口
-            DecisionPbDetail decisionPbDetail = decisionPbDetailService.creditApply(user, orderNo);
+            log.info("十露盘风控，开始请求"+ orderNo);
+            DecisionPbDetail decisionPbDetail = decisionPbDetailService.selectByOrderNo(orderNo);
+            if(decisionPbDetail == null) {
+                decisionPbDetail = decisionPbDetailService.creditApply(user, orderNo);
+            }
             if (decisionPbDetail != null && PbResultEnum.DENY.getCode().equals(decisionPbDetail.getResult()) && "拒绝".equals(decisionPbDetail.getDesc())) {
                 if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
                     //聚合风控下单异常直接转入人工审核
@@ -118,40 +122,48 @@ public class PbRiskManageConsumer {
                 return;
             } else {
                 if (decisionPbDetail == null) {
-                    log.error("风控表数据新增失败，message={}", JSON.toJSONString(riskAuditMessage));
+                    log.error("十露盘风控表数据新增失败，message={}", JSON.toJSONString(riskAuditMessage));
                     return;
                 }
                 rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result_wait, riskAuditMessage);
             }
-            log.info("风控,[notify]：结束");
+            log.info("十露盘风控,[notify]：结束");
         } catch (Exception e) {
             //风控异常重新提交订单或者进入人工审核
-            log.error("风控异常{}", JSON.toJSONString(riskAuditMessage));
-            log.error("风控异常", e);
-            if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
-                redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId());
-            } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
-                redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderNo());
-            }
+            log.error("十露盘风控异常{}", JSON.toJSONString(riskAuditMessage));
+            log.error("十露盘风控异常", e);
             if (riskAuditMessage.getTimes() < 6) {
                 riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
                 rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_notify, riskAuditMessage);
                 return;
             }
+            try {
+                if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
+                    //聚合风控下单异常直接转入人工审核
+                    order.setStatus(ConstantUtils.unsettledOrderStatus);
+                    orderService.updateOrderByRisk(order);
+                } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
+                    //融泽风控查询异常直接返回审批失败
+                    DecisionPbDetail decisionPbDetail = decisionPbDetailService.selectByOrderNo(orderNo);
+                    if(decisionPbDetail == null) {
+                        decisionPbDetail = new DecisionPbDetail();
+                        decisionPbDetail.setResult(PbResultEnum.DENY.getCode());
+                        decisionPbDetail.setDesc("拒绝");
+                        decisionPbDetail.setOrderNo(riskAuditMessage.getOrderNo());
+                        decisionPbDetail.setCreatetime(new Date());
+                        decisionPbDetail.setUpdatetime(new Date());
+                        decisionPbDetailService.insert(decisionPbDetail);
+                    }
+                    callbackThird(orderUser, decisionPbDetail);
+                }
+            }catch (Exception e1) {
+                log.error("十露盘风控异常2", e1);
+            }
+        }finally {
             if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
-                //聚合风控下单异常直接转入人工审核
-                order.setStatus(ConstantUtils.unsettledOrderStatus);
-                orderService.updateOrderByRisk(order);
+                redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId());
             } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
-                //融泽风控查询异常直接返回审批失败
-                DecisionPbDetail decisionPbDetail = new DecisionPbDetail();
-                decisionPbDetail.setResult(PbResultEnum.DENY.getCode());
-                decisionPbDetail.setDesc("拒绝");
-                decisionPbDetail.setOrderNo(riskAuditMessage.getOrderNo());
-                decisionPbDetail.setCreatetime(new Date());
-                decisionPbDetail.setUpdatetime(new Date());
-                decisionPbDetailService.insert(decisionPbDetail);
-                callbackThird(orderUser, decisionPbDetail);
+                redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderNo());
             }
         }
     }
