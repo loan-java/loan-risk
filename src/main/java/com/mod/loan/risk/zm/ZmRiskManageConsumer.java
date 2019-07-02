@@ -86,7 +86,7 @@ public class ZmRiskManageConsumer {
                     return;
                 }
                 if (orderUser == null || orderUser.getUid() == null || orderUser.getOrderNo() == null) {
-                    log.info("指迷风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
+                    log.error("指迷风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
                     return;
                 }
                 uid = orderUser.getUid();
@@ -97,11 +97,11 @@ public class ZmRiskManageConsumer {
             }
             Merchant merchant = merchantService.findMerchantByAlias(riskAuditMessage.getMerchant());
             if (merchant == null) {
-                log.info("指迷风控，无效的商户 message={}", riskAuditMessage.getMerchant());
+                log.error("指迷风控，无效的商户 message={}", riskAuditMessage.getMerchant());
                 return;
             }
             if (!ConstantUtils.THREE.equals(merchant.getRiskType())) {
-                log.info("指迷风控，无效的风控类型 message={}", riskAuditMessage.getMerchant());
+                log.error("指迷风控，无效的风控类型 message={}", riskAuditMessage.getMerchant());
                 return;
             }
 
