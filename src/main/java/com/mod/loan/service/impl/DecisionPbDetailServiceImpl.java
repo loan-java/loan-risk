@@ -65,9 +65,12 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
         try {
             OrderUser orderUser = orderUserService.selectByOrderNo(orderNo);
             Merchant merchant = merchantService.findMerchantByAlias(user.getMerchant());
+            if(merchant == null){
+                throw new Exception("十路盘风控查询:商户不存" + user.getMerchant());
+            }
             //是否存在关联的借贷信息
             if(orderUser.getMerchantRateId() == null){
-                throw new Exception("十路盘风控查询:商户不存在Order关联的借贷信息");
+                throw new Exception("十路盘风控查询:商户不存在Order关联的借贷信息" + orderUser.toString());
             }
             MerchantRate merchantRate = merchantRateMapper.selectByPrimaryKey(orderUser.getMerchantRateId());
             if(merchantRate == null){
@@ -75,11 +78,11 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             }
             BigDecimal approvalAmount1 = merchantRate.getProductMoney(); //审批金额
             if(approvalAmount1 == null) {
-                throw new Exception("十路盘风控查询:商户不存在默认借贷金额");
+                throw new Exception("十路盘风控查询:商户不存在默认借贷金额" + merchantRate.toString());
             }
             Integer approvalTerm1 = merchantRate.getProductDay(); //审批期限
             if(approvalTerm1 == null) {
-                throw new Exception("十路盘风控查询:商户不存在默认借贷期限");
+                throw new Exception("十路盘风控查询:商户不存在默认借贷期限" + merchantRate.toString());
             }
 
             UserInfo userInfo = userInfoMapper.selectByPrimaryKey(user.getId());
