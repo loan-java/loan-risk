@@ -104,8 +104,9 @@ public class ZmRiskManageConsumer {
                 log.info("指迷风控，无效的风控类型 message={}", riskAuditMessage.getMerchant());
                 return;
             }
+
             User user = userService.selectByPrimaryKey(uid);
-            //开始请求2.2接口
+            log.info("指迷风控,[notify]：开始请求接口=================" + orderNo);
             DecisionZmDetail zmDetail = zmDetailService.creditApply(user, orderNo);
             if(zmDetail == null){
                 if (riskAuditMessage.getTimes() < 6) {
