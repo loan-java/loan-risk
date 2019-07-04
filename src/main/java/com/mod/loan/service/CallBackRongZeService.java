@@ -6,12 +6,9 @@ import com.mod.loan.model.OrderUser;
 public interface CallBackRongZeService {
 
     /**
-     * 推送风控审批结果
+     * 推送风控订单结果
      *
      */
-    void pushRiskResultForQjld(OrderUser orderUser, String riskCode, String riskDesc);
+    void pushOrderStatus(Order order) throws Exception;
 
-    void pushRiskResultForPb(OrderUser orderUser, String riskCode, String riskDesc);
-
-    void pushRiskResultForZm(OrderUser orderUser, String riskCode);
 }

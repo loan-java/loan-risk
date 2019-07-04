@@ -54,4 +54,8 @@
 		order by id desc
     </select>
 
+    <select id="findByOrderNoAndSource" resultMap="BaseResultMap">
+    select * from tb_order where order_no=#{orderNo} and source=#{source} order by id desc limit 1
+  </select>
+
 </mapper>

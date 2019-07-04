@@ -36,4 +36,9 @@ public class OrderServiceImpl extends BaseServiceImpl<Order, Long> implements Or
         orderMapper.updateByPrimaryKeySelective(order);
     }
 
+
+    @Override
+    public Order findOrderByOrderNoAndSource(String orderNo, int source) {
+        return orderMapper.findByOrderNoAndSource(orderNo, source);
+    }
 }

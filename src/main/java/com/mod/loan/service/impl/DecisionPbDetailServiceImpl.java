@@ -7,7 +7,6 @@ import com.mod.loan.common.enums.PbResultEnum;
 import com.mod.loan.common.mapper.BaseServiceImpl;
 import com.mod.loan.config.Constant;
 import com.mod.loan.config.pb.PbConfig;
-import com.mod.loan.config.redis.RedisMapper;
 import com.mod.loan.mapper.*;
 import com.mod.loan.model.*;
 import com.mod.loan.service.DecisionPbDetailService;
@@ -60,28 +59,28 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
 
     //2.2接口调用
     @Override
-    public DecisionPbDetail creditApply(User user, String orderNo) throws Exception {
+    public DecisionPbDetail creditApply(User user, Order order) throws Exception {
         DecisionPbDetail decisionPbDetail = null;
         try {
-            OrderUser orderUser = orderUserService.selectByOrderNo(orderNo);
+            OrderUser orderUser = orderUserService.selectByOrderNo(order.getOrderNo());
             Merchant merchant = merchantService.findMerchantByAlias(user.getMerchant());
-            if(merchant == null){
+            if (merchant == null) {
                 throw new Exception("十路盘风控查询:商户不存" + user.getMerchant());
             }
             //是否存在关联的借贷信息
-            if(orderUser.getMerchantRateId() == null){
+            if (orderUser.getMerchantRateId() == null) {
                 throw new Exception("十路盘风控查询:商户不存在Order关联的借贷信息" + orderUser.toString());
             }
             MerchantRate merchantRate = merchantRateMapper.selectByPrimaryKey(orderUser.getMerchantRateId());
-            if(merchantRate == null){
+            if (merchantRate == null) {
                 throw new Exception("十路盘风控查询:商户不存在默认的借贷信息");
             }
             BigDecimal approvalAmount1 = merchantRate.getProductMoney(); //审批金额
-            if(approvalAmount1 == null) {
+            if (approvalAmount1 == null) {
                 throw new Exception("十路盘风控查询:商户不存在默认借贷金额" + merchantRate.toString());
             }
             Integer approvalTerm1 = merchantRate.getProductDay(); //审批期限
-            if(approvalTerm1 == null) {
+            if (approvalTerm1 == null) {
                 throw new Exception("十路盘风控查询:商户不存在默认借贷期限" + merchantRate.toString());
             }
 
@@ -96,7 +95,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             ApplyWithCreditRequest request = new ApplyWithCreditRequest();
             request.setMerchantId(pbConfig.getMerchantId());
             request.setProductId(pbConfig.getProductId());
-            request.setLoanNo(orderNo);//todo 这里要修改为 orderNo
+            request.setLoanNo(order.getOrderNo());
             //模型好从开放平台获取，这里只是例子
             request.setVersion(pbConfig.getVersion());
             request.setUserName(user.getUserName());
@@ -150,25 +149,26 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                 riskData.put("behavior", behavior);
             }
             //如为聚信立
-            riskData.put("jxlAccessReport", jxlAccessReport(orderNo));
-            riskData.put("jxlOriginalData", jxlOriginalData(orderNo));
-            log.info("订单：" + orderNo + "聚信立信息,聚信立运营商报告是否为空：" + (riskData.get("jxlAccessReport") == null));
-            log.info("订单：" + orderNo + "聚信立信息,原始运营商报告是否为空：" + (riskData.get("jxlOriginalData") == null));
+            riskData.put("jxlAccessReport", jxlAccessReport(order.getOrderNo()));
+            riskData.put("jxlOriginalData", jxlOriginalData(order.getOrderNo()));
+            log.info("订单：" + order.getOrderNo() + "聚信立信息,聚信立运营商报告是否为空：" + (riskData.get("jxlAccessReport") == null));
+            log.info("订单：" + order.getOrderNo() + "聚信立信息,原始运营商报告是否为空：" + (riskData.get("jxlOriginalData") == null));
             //判断是否存在
             if (riskData.get("jxlAccessReport") == null || riskData.get("jxlOriginalData") == null) {
                 //拒绝状态直接返回审批失败
                 decisionPbDetail = new DecisionPbDetail();
+                decisionPbDetail.setOrderId(order.getId());
                 decisionPbDetail.setResult(PbResultEnum.DENY.getCode());
                 decisionPbDetail.setScore("0.0");
                 decisionPbDetail.setDesc("拒绝");
                 decisionPbDetail.setMsg("成功");
                 decisionPbDetail.setCode("000000");
-                decisionPbDetail.setOrderNo(orderNo);
+                decisionPbDetail.setOrderNo(order.getOrderNo());
                 decisionPbDetail.setLoanMoney(0L);
                 decisionPbDetail.setCreatetime(new Date());
                 decisionPbDetail.setUpdatetime(new Date());
                 pbDetailMapper.insert(decisionPbDetail);
-                log.info("拒绝状态直接返回审批失败,orderNo:{}", orderNo);
+                log.info("拒绝状态直接返回审批失败,orderNo:{}", order.getOrderNo());
                 return decisionPbDetail;
             }
             request.setRiskData(riskData);
@@ -177,7 +177,8 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             //开始封装数据
             if (response != null) {
                 decisionPbDetail = new DecisionPbDetail();
-                decisionPbDetail.setOrderNo(orderNo);
+                decisionPbDetail.setOrderId(order.getId());
+                decisionPbDetail.setOrderNo(order.getOrderNo());
                 String result = response.getResult();
                 decisionPbDetail.setResult(result);
                 decisionPbDetail.setDesc(response.getDesc());

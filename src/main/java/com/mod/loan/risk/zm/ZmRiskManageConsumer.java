@@ -6,7 +6,10 @@ import com.mod.loan.common.message.RiskAuditMessage;
 import com.mod.loan.config.rabbitmq.RabbitConst;
 import com.mod.loan.config.redis.RedisConst;
 import com.mod.loan.config.redis.RedisMapper;
-import com.mod.loan.model.*;
+import com.mod.loan.model.DecisionZmDetail;
+import com.mod.loan.model.Merchant;
+import com.mod.loan.model.Order;
+import com.mod.loan.model.User;
 import com.mod.loan.service.*;
 import com.mod.loan.util.ConstantUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -52,13 +55,10 @@ public class ZmRiskManageConsumer {
     public void risk_order_notify(Message mess) {
         RiskAuditMessage riskAuditMessage = JSONObject.parseObject(mess.getBody(), RiskAuditMessage.class);
         Order order = null;
-        OrderUser orderUser = null;
-        Long uid = null;
-        String orderNo = null;
         try {
             log.info("指迷风控信息,[notify]：" + JSON.toJSONString(riskAuditMessage));
-            //聚合订单校验
-            if (riskAuditMessage.getSource() == ConstantUtils.ZERO && riskAuditMessage.getOrderId() != null) {
+            //订单校验
+            if (riskAuditMessage.getOrderId() != null) {
                 order = orderService.selectByPrimaryKey(riskAuditMessage.getOrderId());
                 if (!redisMapper.lock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId(), 30)) {
                     log.error("指迷风控消息重复，message={}", JSON.toJSONString(riskAuditMessage));
@@ -72,21 +72,6 @@ public class ZmRiskManageConsumer {
                     log.info("指迷风控，无效的订单状态 message={}", JSON.toJSONString(riskAuditMessage));
                     return;
                 }
-                uid = order.getUid();
-                orderNo = order.getOrderNo();
-                //融泽订单校验
-            } else if (riskAuditMessage.getSource() == ConstantUtils.ONE && riskAuditMessage.getOrderNo() != null) {
-                orderUser = orderUserService.selectByOrderNo(riskAuditMessage.getOrderNo());
-                if (!redisMapper.lock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderNo(), 30)) {
-                    log.error("指迷风控消息重复，message={}", JSON.toJSONString(riskAuditMessage));
-                    return;
-                }
-                if (orderUser == null || orderUser.getUid() == null || orderUser.getOrderNo() == null) {
-                    log.error("指迷风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
-                    return;
-                }
-                uid = orderUser.getUid();
-                orderNo = orderUser.getOrderNo();
             } else {
                 log.error("指迷风控消息错误，message={}", JSON.toJSONString(riskAuditMessage));
                 return;
@@ -101,13 +86,13 @@ public class ZmRiskManageConsumer {
                 return;
             }
 
-            User user = userService.selectByPrimaryKey(uid);
-            log.info("指迷风控,[notify]：开始请求接口=================" + orderNo);
-            DecisionZmDetail  zmDetail = zmDetailService.selectByOrderNo(riskAuditMessage.getOrderNo());
-            if(zmDetail == null) {
-                zmDetail = zmDetailService.creditApply(user, orderNo);
+            User user = userService.selectByPrimaryKey(order.getUid());
+            log.info("指迷风控,[notify]：开始请求接口=================" + order.getOrderNo());
+            DecisionZmDetail zmDetail = zmDetailService.selectByOrderNo(riskAuditMessage.getOrderNo());
+            if (zmDetail == null) {
+                zmDetail = zmDetailService.creditApply(user, order.getOrderNo());
             }
-            if(zmDetail == null){
+            if (zmDetail == null) {
                 if (riskAuditMessage.getTimes() < 6) {
                     riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
                     rabbitTemplate.convertAndSend(RabbitConst.zm_queue_risk_order_notify, riskAuditMessage);
@@ -126,21 +111,22 @@ public class ZmRiskManageConsumer {
                         zmDetail.setCreatetime(new Date());
                         zmDetail.setUpdatetime(new Date());
                         zmDetailService.insert(zmDetail);
-                        callbackThird(orderUser, zmDetail);
-                    }
-                }
-            }else{
-                if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
-                    if ( "-1".equals(zmDetail.getReturnCode())) {
                         order.setStatus(ConstantUtils.rejectOrderStatus);
                         orderService.updateOrderByRisk(order);
-
-                    } else if ("0".equals(zmDetail.getReturnCode())) {
-                        order.setStatus(ConstantUtils.agreeOrderStatus);
-                        orderService.updateOrderByRisk(order);
+                        callBackRongZeService.pushOrderStatus(order);
                     }
-                } else if(riskAuditMessage.getSource() == ConstantUtils.ONE){
-                    callbackThird(orderUser, zmDetail);
+                }
+            } else {
+                if ("-1".equals(zmDetail.getReturnCode())) {
+                    order.setStatus(ConstantUtils.rejectOrderStatus);
+                    orderService.updateOrderByRisk(order);
+
+                } else if ("0".equals(zmDetail.getReturnCode())) {
+                    order.setStatus(ConstantUtils.agreeOrderStatus);
+                    orderService.updateOrderByRisk(order);
+                }
+                if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
+                    callBackRongZeService.pushOrderStatus(order);
                 }
             }
             log.info("指迷风控,[notify]：结束");
@@ -151,16 +137,20 @@ public class ZmRiskManageConsumer {
             if (riskAuditMessage.getTimes() < 6) {
                 riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
                 rabbitTemplate.convertAndSend(RabbitConst.zm_queue_risk_order_notify, riskAuditMessage);
-            }else{
+            } else {
                 try {
                     if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
                         //聚合风控下单异常直接转入人工审核
                         order.setStatus(ConstantUtils.unsettledOrderStatus);
                         orderService.updateOrderByRisk(order);
                     } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
-                        DecisionZmDetail  zmDetail = zmDetailService.selectByOrderNo(riskAuditMessage.getOrderNo());
-                        if(zmDetail == null) {
-                            zmDetail = new DecisionZmDetail();zmDetail.setReturnCode("-1");
+                        DecisionZmDetail zmDetail = zmDetailService.selectByOrderNo(riskAuditMessage.getOrderNo());
+                        order.setStatus(ConstantUtils.rejectOrderStatus);
+                        orderService.updateOrderByRisk(order);
+
+                        if (zmDetail == null) {
+                            zmDetail = new DecisionZmDetail();
+                            zmDetail.setReturnCode("-1");
                             zmDetail.setReturnInfo("fail");
                             zmDetail.setScore("0.0");
                             zmDetail.setOrderNo(riskAuditMessage.getOrderNo());
@@ -168,18 +158,14 @@ public class ZmRiskManageConsumer {
                             zmDetail.setUpdatetime(new Date());
                             zmDetailService.insert(zmDetail);
                         }
-                        callbackThird(orderUser, zmDetail);
+                        callBackRongZeService.pushOrderStatus(order);
                     }
-                }catch (Exception e1) {
+                } catch (Exception e1) {
                     log.error("指迷风控异常2", e1);
                 }
             }
-        }finally {
-            if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
-                redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId());
-            } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
-                redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderNo());
-            }
+        } finally {
+            redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId());
         }
     }
 
@@ -192,7 +178,4 @@ public class ZmRiskManageConsumer {
         return factory;
     }
 
-    private void callbackThird(OrderUser orderUser, DecisionZmDetail risk) {
-        callBackRongZeService.pushRiskResultForZm(orderUser, risk.getReturnCode());
-    }
 }

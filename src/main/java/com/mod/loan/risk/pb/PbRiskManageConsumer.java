@@ -7,7 +7,10 @@ import com.mod.loan.common.message.RiskAuditMessage;
 import com.mod.loan.config.rabbitmq.RabbitConst;
 import com.mod.loan.config.redis.RedisConst;
 import com.mod.loan.config.redis.RedisMapper;
-import com.mod.loan.model.*;
+import com.mod.loan.model.DecisionPbDetail;
+import com.mod.loan.model.Merchant;
+import com.mod.loan.model.Order;
+import com.mod.loan.model.User;
 import com.mod.loan.service.*;
 import com.mod.loan.util.ConstantUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -31,8 +34,6 @@ public class PbRiskManageConsumer {
     @Autowired
     private OrderService orderService;
 
-    @Autowired
-    private OrderUserService orderUserService;
 
     @Autowired
     private MerchantService merchantService;
@@ -40,13 +41,10 @@ public class PbRiskManageConsumer {
     private UserService userService;
     @Autowired
     private DecisionPbDetailService decisionPbDetailService;
-
     @Autowired
     private RabbitTemplate rabbitTemplate;
-
     @Autowired
     private RedisMapper redisMapper;
-
     @Resource
     private CallBackRongZeService callBackRongZeService;
 
@@ -55,13 +53,11 @@ public class PbRiskManageConsumer {
     public void risk_order_notify(Message mess) {
         RiskAuditMessage riskAuditMessage = JSONObject.parseObject(mess.getBody(), RiskAuditMessage.class);
         Order order = null;
-        OrderUser orderUser = null;
         Long uid = null;
-        String orderNo = null;
         try {
-            log.info("十露盘风控信息,[notify]：" +  JSON.toJSONString(riskAuditMessage));
-            //聚合订单校验
-            if (riskAuditMessage.getSource() == ConstantUtils.ZERO && riskAuditMessage.getOrderId() != null) {
+            log.info("十露盘风控信息,[notify]：" + JSON.toJSONString(riskAuditMessage));
+            //所有订单订单校验
+            if (riskAuditMessage.getOrderId() != null) {
                 order = orderService.selectByPrimaryKey(riskAuditMessage.getOrderId());
                 if (!redisMapper.lock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId(), 30)) {
                     log.error("十露盘风控消息重复，message={}", JSON.toJSONString(riskAuditMessage));
@@ -76,23 +72,6 @@ public class PbRiskManageConsumer {
                     return;
                 }
                 uid = order.getUid();
-                orderNo = order.getOrderNo();
-                //融泽订单校验
-            } else if (riskAuditMessage.getSource() == ConstantUtils.ONE && riskAuditMessage.getOrderNo() != null) {
-                orderUser = orderUserService.selectByOrderNo(riskAuditMessage.getOrderNo());
-                if (!redisMapper.lock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderNo(), 30)) {
-                    log.error("十露盘风控消息重复，message={}", JSON.toJSONString(riskAuditMessage));
-                    return;
-                }
-                if (orderUser == null || orderUser.getUid() == null || orderUser.getOrderNo() == null) {
-                    log.error("十露盘风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
-                    return;
-                }
-                uid = orderUser.getUid();
-                orderNo = orderUser.getOrderNo();
-            } else {
-                log.error("十露盘风控消息错误，message={}", JSON.toJSONString(riskAuditMessage));
-                return;
             }
             Merchant merchant = merchantService.findMerchantByAlias(riskAuditMessage.getMerchant());
             if (merchant == null) {
@@ -105,23 +84,27 @@ public class PbRiskManageConsumer {
             }
             User user = userService.selectByPrimaryKey(uid);
             //开始请求2.2接口
-            log.info("十露盘风控，开始请求"+ orderNo);
-            DecisionPbDetail decisionPbDetail = decisionPbDetailService.selectByOrderNo(orderNo);
-            if(decisionPbDetail == null) {
-                decisionPbDetail = decisionPbDetailService.creditApply(user, orderNo);
+            log.info("十露盘风控，开始请求" + order.getOrderNo());
+            DecisionPbDetail decisionPbDetail = decisionPbDetailService.selectByOrderNo(order.getOrderNo());
+            if (decisionPbDetail == null) {
+                decisionPbDetail = decisionPbDetailService.creditApply(user, order);
             }
             if (decisionPbDetail != null && PbResultEnum.DENY.getCode().equals(decisionPbDetail.getResult()) && "拒绝".equals(decisionPbDetail.getDesc())) {
-                if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
-                    //聚合风控下单异常直接转入人工审核
-                    order.setStatus(ConstantUtils.unsettledOrderStatus);
-                    orderService.updateOrderByRisk(order);
-                } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
-                    //融泽风控查询异常直接返回审批失败
-                    callbackThird(orderUser, decisionPbDetail);
+                //风控下单异常订单直接失败
+                order.setStatus(ConstantUtils.rejectOrderStatus);
+                orderService.updateOrderByRisk(order);
+                if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
+                    callBackRongZeService.pushOrderStatus(order);
                 }
                 return;
             } else {
                 if (decisionPbDetail == null) {
+                    //风控下单异常订单直接失败
+                    order.setStatus(ConstantUtils.rejectOrderStatus);
+                    orderService.updateOrderByRisk(order);
+                    if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
+                        callBackRongZeService.pushOrderStatus(order);
+                    }
                     log.error("十露盘风控表数据新增失败，message={}", JSON.toJSONString(riskAuditMessage));
                     return;
                 }
@@ -139,32 +122,31 @@ public class PbRiskManageConsumer {
             }
             try {
                 if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
-                    //聚合风控下单异常直接转入人工审核
+                    //风控下单异常直接转入人工审核
                     order.setStatus(ConstantUtils.unsettledOrderStatus);
                     orderService.updateOrderByRisk(order);
                 } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
                     //融泽风控查询异常直接返回审批失败
-                    DecisionPbDetail decisionPbDetail = decisionPbDetailService.selectByOrderNo(orderNo);
-                    if(decisionPbDetail == null) {
+                    DecisionPbDetail decisionPbDetail = decisionPbDetailService.selectByOrderNo(order.getOrderNo());
+                    if (decisionPbDetail == null) {
                         decisionPbDetail = new DecisionPbDetail();
+                        decisionPbDetail.setOrderId(order.getId());
                         decisionPbDetail.setResult(PbResultEnum.DENY.getCode());
                         decisionPbDetail.setDesc("拒绝");
                         decisionPbDetail.setOrderNo(riskAuditMessage.getOrderNo());
                         decisionPbDetail.setCreatetime(new Date());
                         decisionPbDetail.setUpdatetime(new Date());
                         decisionPbDetailService.insert(decisionPbDetail);
+                        order.setStatus(ConstantUtils.rejectOrderStatus);
+                        orderService.updateOrderByRisk(order);
+                        callBackRongZeService.pushOrderStatus(order);
                     }
-                    callbackThird(orderUser, decisionPbDetail);
                 }
-            }catch (Exception e1) {
+            } catch (Exception e1) {
                 log.error("十露盘风控异常2", e1);
             }
-        }finally {
-            if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
-                redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId());
-            } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
-                redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderNo());
-            }
+        } finally {
+            redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId());
         }
     }
 
@@ -177,7 +159,4 @@ public class PbRiskManageConsumer {
         return factory;
     }
 
-    private void callbackThird(OrderUser orderUser, DecisionPbDetail risk) {
-        callBackRongZeService.pushRiskResultForPb(orderUser, risk.getCode(), risk.getDesc());
-    }
 }

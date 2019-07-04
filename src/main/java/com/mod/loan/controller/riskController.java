@@ -1,5 +1,6 @@
 package com.mod.loan.controller;
 
+import com.mod.loan.common.enums.OrderSourceEnum;
 import com.mod.loan.model.DecisionPbDetail;
 import com.mod.loan.model.DecisionZmDetail;
 import com.mod.loan.model.User;
@@ -23,6 +24,8 @@ public class riskController {
     @Autowired
     private DecisionZmDetailService zmDetailService;
 
+    @Autowired
+    private OrderService orderService;
 
     @Autowired
     private UserService userService;
@@ -31,7 +34,7 @@ public class riskController {
     public String creditApplyPb() throws Exception {
         User user =userService.selectByPrimaryKey((long)940);
         String orderNo="1665673124496871424";
-        DecisionPbDetail decisionPbDetail = decisionPbDetailService.creditApply(user, orderNo);
+        DecisionPbDetail decisionPbDetail = decisionPbDetailService.creditApply(user, orderService.findOrderByOrderNoAndSource(orderNo, OrderSourceEnum.RONGZE.getSoruce()));
         return String.valueOf(decisionPbDetail);
     }
 

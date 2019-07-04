@@ -42,9 +42,6 @@ public class QjldRiskManageConsumer {
 
 
     @Autowired
-    private OrderUserService orderUserService;
-
-    @Autowired
     private MerchantService merchantService;
     @Autowired
     private UserService userService;
@@ -75,8 +72,8 @@ public class QjldRiskManageConsumer {
         OrderUser orderUser = null;
         try {
             log.info("新颜风控信息,[notify]：" + riskAuditMessage.toString());
-            //聚合订单校验
-            if (riskAuditMessage.getSource() == ConstantUtils.ZERO && riskAuditMessage.getOrderId() != null) {
+            //订单校验
+            if (riskAuditMessage.getOrderId() != null) {
                 order = orderService.selectByPrimaryKey(riskAuditMessage.getOrderId());
                 if (!redisMapper.lock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId(), 30)) {
                     log.error("新颜风控消息重复，message={}", JSON.toJSONString(riskAuditMessage));
@@ -91,16 +88,6 @@ public class QjldRiskManageConsumer {
                     return;
                 }
                 //融泽订单校验
-            } else if (riskAuditMessage.getSource() == ConstantUtils.ONE && riskAuditMessage.getOrderNo() != null) {
-                orderUser = orderUserService.selectByOrderNo(riskAuditMessage.getOrderNo());
-                if (!redisMapper.lock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderNo(), 30)) {
-                    log.error("新颜风控消息重复，message={}", JSON.toJSONString(riskAuditMessage));
-                    return;
-                }
-                if (orderUser == null) {
-                    log.error("新颜风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
-                    return;
-                }
             } else {
                 log.error("新颜风控消息错误，message={}", JSON.toJSONString(riskAuditMessage));
                 return;
@@ -148,17 +135,15 @@ public class QjldRiskManageConsumer {
                     TbDecisionResDetail resDetail = new TbDecisionResDetail(decisionRes);
                     resDetail.setOrderNo(riskAuditMessage.getOrderNo());
                     decisionResDetailService.insert(resDetail);
-                    callbackThird(orderUser, decisionRes);
+                    order.setStatus(ConstantUtils.rejectOrderStatus);
+                    orderService.updateOrderByRisk(order);
+                    callBackRongZeService.pushOrderStatus(order);
                 }
-            }catch (Exception e1) {
+            } catch (Exception e1) {
                 log.error("新颜风控异常2", e);
             }
-        }finally {
-            if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
-                redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId());
-            } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
-                redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderNo());
-            }
+        } finally {
+            redisMapper.unlock(RedisConst.ORDER_POLICY_LOCK + riskAuditMessage.getOrderId());
         }
     }
 
@@ -171,7 +156,4 @@ public class QjldRiskManageConsumer {
         return factory;
     }
 
-    private void callbackThird(OrderUser orderUser, DecisionResDetailDTO risk) {
-        callBackRongZeService.pushRiskResultForQjld(orderUser, risk.getCode(), risk.getDesc());
-    }
 }

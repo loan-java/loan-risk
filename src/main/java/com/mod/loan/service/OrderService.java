@@ -11,4 +11,11 @@ public interface OrderService extends BaseService<Order, Long> {
 	void updatePayCallbackInfo(Order order, OrderPay orderPay);
 
 	void updateOrderByRisk(Order order);
+
+	/**
+	 * 根据订单编号查订单
+	 * @param orderNo
+	 * @return
+	 */
+	Order findOrderByOrderNoAndSource(String orderNo, int source);
 }

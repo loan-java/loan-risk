@@ -1,7 +1,10 @@
 
 import com.alibaba.fastjson.JSONObject;
 import com.mod.loan.Application;
+import com.mod.loan.common.enums.OrderSourceEnum;
+import com.mod.loan.common.enums.OrderTypeEnum;
 import com.mod.loan.model.DecisionZmDetail;
+import com.mod.loan.model.Order;
 import com.mod.loan.model.OrderUser;
 import com.mod.loan.model.User;
 import com.mod.loan.service.*;
@@ -31,6 +34,8 @@ public class RiskTest {
     private UserService userService;
     @Autowired
     private OrderUserService orderUserService;
+    @Autowired
+    private OrderService orderService;
 
     @Test
     public void risk1() throws Exception {
@@ -48,9 +53,9 @@ public class RiskTest {
 
 
     @Test
-    public void risk3() {
-        OrderUser orderUser = orderUserService.selectByOrderNo("1665673124496871424");
-        callBackRongZeService.pushRiskResultForZm(orderUser, "0");
+    public void risk3() throws Exception {
+        Order order = orderService.findOrderByOrderNoAndSource("1665673124496871424", OrderSourceEnum.RONGZE.getSoruce());
+        callBackRongZeService.pushOrderStatus(order);
     }
 
 
