@@ -93,7 +93,6 @@ public class PbRiskManageQueryConsumer {
                     orderService.updateOrderByRisk(order);
                 }
             }
-
             if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
                 callBackRongZeService.pushOrderStatus(order);
             }
@@ -107,31 +106,27 @@ public class PbRiskManageQueryConsumer {
                 rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_result_wait, riskAuditMessage);
                 return;
             }
-            if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
-                //聚合风控查询异常直接转入人工审核
-                order.setStatus(ConstantUtils.unsettledOrderStatus);
+            try {
+                //融泽风控查询异常直接返回失败 更新风控表
+                DecisionPbDetail query = decisionPbDetailService.selectByOrderNo(riskAuditMessage.getOrderNo());
+                order.setStatus(ConstantUtils.rejectOrderStatus);
                 orderService.updateOrderByRisk(order);
-            } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
-                try {
-                    //融泽风控查询异常直接返回失败 更新风控表
-                    DecisionPbDetail query = decisionPbDetailService.selectByOrderNo(riskAuditMessage.getOrderNo());
-                    order.setStatus(ConstantUtils.rejectOrderStatus);
-                    orderService.updateOrderByRisk(order);
-                    if (query == null) {
-                        log.error("十露盘风控表数据不存在[query]，message={}", JSON.toJSONString(riskAuditMessage));
-                        return;
-                    }
-                    DecisionPbDetail decisionPbDetail = new DecisionPbDetail();
-                    decisionPbDetail.setId(query.getId());
-                    decisionPbDetail.setResult(PbResultEnum.DENY.getCode());
-                    decisionPbDetail.setDesc("拒绝");
-                    decisionPbDetail.setOrderNo(riskAuditMessage.getOrderNo());
-                    decisionPbDetail.setUpdatetime(new Date());
-                    decisionPbDetailService.updateByPrimaryKeySelective(decisionPbDetail);
+                if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
                     callBackRongZeService.pushOrderStatus(order);
-                } catch (Exception e1) {
-                    log.error("十露盘风控订单查询异常信息[2]", e1);
                 }
+                if (query == null) {
+                    log.error("十露盘风控表数据不存在[query]，message={}", JSON.toJSONString(riskAuditMessage));
+                    return;
+                }
+                DecisionPbDetail decisionPbDetail = new DecisionPbDetail();
+                decisionPbDetail.setId(query.getId());
+                decisionPbDetail.setResult(PbResultEnum.DENY.getCode());
+                decisionPbDetail.setDesc("拒绝");
+                decisionPbDetail.setOrderNo(riskAuditMessage.getOrderNo());
+                decisionPbDetail.setUpdatetime(new Date());
+                decisionPbDetailService.updateByPrimaryKeySelective(decisionPbDetail);
+            } catch (Exception e1) {
+                log.error("十露盘风控订单查询异常信息[2]", e1);
             }
         }
     }

@@ -121,26 +121,23 @@ public class PbRiskManageConsumer {
                 return;
             }
             try {
-                if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
-                    //风控下单异常直接转入人工审核
-                    order.setStatus(ConstantUtils.unsettledOrderStatus);
-                    orderService.updateOrderByRisk(order);
-                } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
-                    //融泽风控查询异常直接返回审批失败
-                    DecisionPbDetail decisionPbDetail = decisionPbDetailService.selectByOrderNo(order.getOrderNo());
-                    if (decisionPbDetail == null) {
-                        decisionPbDetail = new DecisionPbDetail();
-                        decisionPbDetail.setOrderId(order.getId());
-                        decisionPbDetail.setResult(PbResultEnum.DENY.getCode());
-                        decisionPbDetail.setDesc("拒绝");
-                        decisionPbDetail.setOrderNo(riskAuditMessage.getOrderNo());
-                        decisionPbDetail.setCreatetime(new Date());
-                        decisionPbDetail.setUpdatetime(new Date());
-                        decisionPbDetailService.insert(decisionPbDetail);
-                        order.setStatus(ConstantUtils.rejectOrderStatus);
-                        orderService.updateOrderByRisk(order);
-                        callBackRongZeService.pushOrderStatus(order);
-                    }
+                //融泽风控查询异常直接返回审批失败
+                DecisionPbDetail decisionPbDetail = decisionPbDetailService.selectByOrderNo(order.getOrderNo());
+                if (decisionPbDetail == null) {
+                    decisionPbDetail = new DecisionPbDetail();
+                    decisionPbDetail.setOrderId(order.getId());
+                    decisionPbDetail.setResult(PbResultEnum.DENY.getCode());
+                    decisionPbDetail.setDesc("拒绝");
+                    decisionPbDetail.setOrderNo(riskAuditMessage.getOrderNo());
+                    decisionPbDetail.setCreatetime(new Date());
+                    decisionPbDetail.setUpdatetime(new Date());
+                    decisionPbDetailService.insert(decisionPbDetail);
+
+                }
+                order.setStatus(ConstantUtils.rejectOrderStatus);
+                orderService.updateOrderByRisk(order);
+                if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
+                    callBackRongZeService.pushOrderStatus(order);
                 }
             } catch (Exception e1) {
                 log.error("十露盘风控异常2", e1);

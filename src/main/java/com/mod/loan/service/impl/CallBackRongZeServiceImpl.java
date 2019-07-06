@@ -25,7 +25,7 @@ public class CallBackRongZeServiceImpl implements CallBackRongZeService {
     public void pushOrderStatus(Order order) throws Exception {
         int status;
         String remark = "";
-        if (order.getStatus() == 23 || order.getStatus() == 53) {
+        if (order.getStatus() == 23) {
             status = 169; //放款失败
             remark = "放款失败";
         } else if (order.getStatus() == 31) {
