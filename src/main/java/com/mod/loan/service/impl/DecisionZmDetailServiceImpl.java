@@ -7,7 +7,8 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.mod.loan.common.mapper.BaseServiceImpl;
 import com.mod.loan.config.Constant;
 import com.mod.loan.config.zm.ZmConfig;
-import com.mod.loan.mapper.*;
+import com.mod.loan.mapper.DecisionZmDetailMapper;
+import com.mod.loan.mapper.UserInfoMapper;
 import com.mod.loan.model.*;
 import com.mod.loan.service.DecisionZmDetailService;
 import com.mod.loan.service.MerchantService;
@@ -51,7 +52,7 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
     private MerchantService merchantService;
 
     @Override
-    public DecisionZmDetail creditApply(User user, String orderNo) throws Exception {
+    public DecisionZmDetail creditApply(User user, Order order) throws Exception {
         DecisionZmDetail zmDetail = null;
         try {
             //开始拼接数据
@@ -59,7 +60,7 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
             Merchant merchant = merchantService.findMerchantByAlias(user.getMerchant());
             String channel = merchant == null ? user.getMerchant() : merchant.getMerchantName();
 
-            OrderUser orderUser = orderUserService.selectByOrderNo(orderNo);
+            OrderUser orderUser = orderUserService.selectByOrderNo(order.getOrderNo());
             String applyTime = DateUtil.dateToStrLong(orderUser.getCreateTime());
             String mobile = user.getUserPhone();
             String name = user.getUserName();
@@ -68,8 +69,8 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
 //            String companyName = userInfo.getWorkCompany();
 //            String companyAddress = userInfo.getWorkAddress();
             Map<String, String> carrier_data = new HashMap<String, String>();
-            carrier_data.put("jxl_report", JSON.toJSONString(jxlAccessReport(orderNo), SerializerFeature.WriteMapNullValue));
-            carrier_data.put("jxl_raw", JSON.toJSONString(jxlOriginalData(orderNo), SerializerFeature.WriteMapNullValue));
+            carrier_data.put("jxl_report", JSON.toJSONString(jxlAccessReport(order.getOrderNo()), SerializerFeature.WriteMapNullValue));
+            carrier_data.put("jxl_raw", JSON.toJSONString(jxlOriginalData(order.getOrderNo()), SerializerFeature.WriteMapNullValue));
 
             ZhimiRiskRequest request = new ZhimiRiskRequest();
             request.setModel_name(model_name);
@@ -89,35 +90,36 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
             HttpClient client = HttpClientBuilder.create().build();
             HttpPost post = new HttpPost(url);
             post.setEntity(new ByteArrayEntity(ZhimiRiskUtil.gzip(requestStr)));
-            log.info("=========指谜风控请求信息,orderNo=" + orderNo + "===========" + JSONObject.toJSONString(post));
+            log.info("=========指谜风控请求信息,orderNo=" + order.getOrderNo() + "===========" + JSONObject.toJSONString(post));
             HttpResponse response = client.execute(post);
             String responseStr = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
-            log.info("=========指谜风控请求返回结果,orderNo=" + orderNo + "===========" + responseStr);
-           if(!StringUtils.isEmpty(responseStr)){
-               JSONObject jsonObject = JSONObject.parseObject(responseStr);
-               int returnCode = jsonObject.getInteger("return_code");
-               if( 0 == returnCode){
-                   String returnInfo = jsonObject.getString("return_info");
-                   double score = jsonObject.getDouble("score");
-                   //大于 560 才算通过
-                   if(560 > score){
-                       returnCode = -1;
-                       returnInfo="fail";
-                   }
-                   zmDetail = new DecisionZmDetail();
-                   zmDetail.setReturnCode(String.valueOf(returnCode));
-                   zmDetail.setReturnInfo(returnInfo);
-                   zmDetail.setRequestId(jsonObject.getString("request_id"));
-                   zmDetail.setScore(String.valueOf(score));
-                   zmDetail.setHistoryApply(jsonObject.getString("history_apply"));
-                   zmDetail.setOrderNo(orderNo);
-                   zmDetail.setCreatetime(new Date());
-                   zmDetail.setUpdatetime(new Date());
-                   zmDetailMapper.insert(zmDetail);
-               }else{
-                   log.info("=========指谜风控请求返回异常结果信息，orderNo=" + orderNo + "===========" + responseStr);
-               }
-           }
+            log.info("=========指谜风控请求返回结果,orderNo=" + order.getOrderNo() + "===========" + responseStr);
+            if (!StringUtils.isEmpty(responseStr)) {
+                JSONObject jsonObject = JSONObject.parseObject(responseStr);
+                int returnCode = jsonObject.getInteger("return_code");
+                if (0 == returnCode) {
+                    String returnInfo = jsonObject.getString("return_info");
+                    double score = jsonObject.getDouble("score");
+                    //大于 560 才算通过
+                    if (560 > score) {
+                        returnCode = -1;
+                        returnInfo = "fail";
+                    }
+                    zmDetail = new DecisionZmDetail();
+                    zmDetail.setReturnCode(String.valueOf(returnCode));
+                    zmDetail.setOrderId(order.getId());
+                    zmDetail.setReturnInfo(returnInfo);
+                    zmDetail.setRequestId(jsonObject.getString("request_id"));
+                    zmDetail.setScore(String.valueOf(score));
+                    zmDetail.setHistoryApply(jsonObject.getString("history_apply"));
+                    zmDetail.setOrderNo(order.getOrderNo());
+                    zmDetail.setCreatetime(new Date());
+                    zmDetail.setUpdatetime(new Date());
+                    zmDetailMapper.insert(zmDetail);
+                } else {
+                    log.info("=========指谜风控请求返回异常结果信息，orderNo=" + order.getOrderNo() + "===========" + responseStr);
+                }
+            }
         } catch (Exception e) {
 //            e.printStackTrace();
             log.error("指迷订单请求出错", e);
@@ -151,7 +153,7 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
         } catch (Exception e) {
             log.error(orderNo + "指迷获取原始运营商报告数据出错", e);
         }
-        return report == null?new JSONObject():report;
+        return report == null ? new JSONObject() : report;
     }
 
     public JSONObject jxlAccessReport(String orderNo) {
@@ -179,7 +181,7 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
         } catch (Exception e) {
             log.error(orderNo + "指迷获取聚信立运营商报告数据出错", e);
         }
-        return report == null?new JSONObject():report;
+        return report == null ? new JSONObject() : report;
     }
 
     //紧急联系人(至少2个)(必填)
@@ -193,7 +195,7 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
     /*
     contact: 手机上爬取的通讯录(非必填，有的话建议填写)
      */
-    public  List<Contact> contactList(User user) {
+    public List<Contact> contactList(User user) {
         List<Contact> contact = new ArrayList<Contact>();
         //  contact.add(new Contact("contact_name", "contact_phone", "update_time"));
         return contact;

@@ -122,6 +122,7 @@ public class PbRiskManageQueryConsumer {
                 decisionPbDetail.setId(query.getId());
                 decisionPbDetail.setResult(PbResultEnum.DENY.getCode());
                 decisionPbDetail.setDesc("拒绝");
+                decisionPbDetail.setOrderId(order.getId());
                 decisionPbDetail.setOrderNo(riskAuditMessage.getOrderNo());
                 decisionPbDetail.setUpdatetime(new Date());
                 decisionPbDetailService.updateByPrimaryKeySelective(decisionPbDetail);

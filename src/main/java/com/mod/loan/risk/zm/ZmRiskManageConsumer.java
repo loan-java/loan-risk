@@ -90,7 +90,7 @@ public class ZmRiskManageConsumer {
             log.info("指迷风控,[notify]：开始请求接口=================" + order.getOrderNo());
             DecisionZmDetail zmDetail = zmDetailService.selectByOrderNo(riskAuditMessage.getOrderNo());
             if (zmDetail == null) {
-                zmDetail = zmDetailService.creditApply(user, order.getOrderNo());
+                zmDetail = zmDetailService.creditApply(user, order);
             }
             if (zmDetail == null) {
                 if (riskAuditMessage.getTimes() < 6) {
@@ -100,6 +100,7 @@ public class ZmRiskManageConsumer {
                 } else {
                     //风控查询异常直接返回审批失败
                     zmDetail = new DecisionZmDetail();
+                    zmDetail.setOrderId(order.getId());
                     zmDetail.setReturnCode("-1");
                     zmDetail.setReturnInfo("fail");
                     zmDetail.setScore("0.0");
