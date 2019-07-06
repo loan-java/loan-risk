@@ -3,6 +3,7 @@ package com.mod.loan.controller;
 import com.mod.loan.common.enums.OrderSourceEnum;
 import com.mod.loan.model.DecisionPbDetail;
 import com.mod.loan.model.DecisionZmDetail;
+import com.mod.loan.model.Order;
 import com.mod.loan.model.User;
 import com.mod.loan.service.*;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +50,8 @@ public class riskController {
     public String creditApplyZm() throws Exception {
         User user =userService.selectByPrimaryKey((long)940);
         String orderNo="1665673124496871424";
-        DecisionZmDetail zmDetail = zmDetailService.creditApply(user, orderNo);
+        Order order =orderService.findOrderByOrderNoAndSource(orderNo,OrderSourceEnum.RONGZE.getSoruce());
+        DecisionZmDetail zmDetail = zmDetailService.creditApply(user, order);
         return String.valueOf(zmDetail);
     }
 
