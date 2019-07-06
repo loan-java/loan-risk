@@ -66,12 +66,14 @@ public class ZmRiskManageConsumer {
                     return;
                 }
                 if (order == null || order.getUid() == null || order.getOrderNo() == null) {
-                    log.error("指迷风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
+                    //third插入订单与查询是不同事务 防止queue取消息过快 查不到订单
                     TimeUnit.SECONDS.sleep(5L);
                     if (riskAuditMessage.getTimes() < 5) {
                         riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
                         rabbitTemplate.convertAndSend(RabbitConst.zm_queue_risk_order_notify, riskAuditMessage);
+                        return;
                     }
+                    log.error("指迷风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
                     return;
                 }
                 if (order.getStatus() != 11) { // 新建的订单才能进入风控模块
