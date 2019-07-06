@@ -122,21 +122,17 @@ public class QjldRiskManageConsumer {
                 return;
             }
             try {
-                if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
-                    //聚合风控下单异常直接转入人工审核
-                    order.setStatus(ConstantUtils.unsettledOrderStatus);
-                    orderService.updateOrderByRisk(order);
-                } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
-                    //融泽风控下单异常直接返回审批失败 插入风控表
-                    DecisionResDetailDTO decisionRes = new DecisionResDetailDTO();
-                    decisionRes.setOrderStatus("FAIL");
-                    decisionRes.setCode(PolicyResultEnum.REJECT.getCode());
-                    decisionRes.setDesc("拒绝");
-                    TbDecisionResDetail resDetail = new TbDecisionResDetail(decisionRes);
-                    resDetail.setOrderNo(riskAuditMessage.getOrderNo());
-                    decisionResDetailService.insert(resDetail);
-                    order.setStatus(ConstantUtils.rejectOrderStatus);
-                    orderService.updateOrderByRisk(order);
+                //风控下单异常直接返回审批失败 插入风控表
+                DecisionResDetailDTO decisionRes = new DecisionResDetailDTO();
+                decisionRes.setOrderStatus("FAIL");
+                decisionRes.setCode(PolicyResultEnum.REJECT.getCode());
+                decisionRes.setDesc("拒绝");
+                TbDecisionResDetail resDetail = new TbDecisionResDetail(decisionRes);
+                resDetail.setOrderNo(riskAuditMessage.getOrderNo());
+                decisionResDetailService.insert(resDetail);
+                order.setStatus(ConstantUtils.rejectOrderStatus);
+                orderService.updateOrderByRisk(order);
+                if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
                     callBackRongZeService.pushOrderStatus(order);
                 }
             } catch (Exception e1) {

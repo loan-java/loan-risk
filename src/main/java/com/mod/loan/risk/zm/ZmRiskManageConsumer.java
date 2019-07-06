@@ -96,23 +96,20 @@ public class ZmRiskManageConsumer {
                 if (riskAuditMessage.getTimes() < 6) {
                     riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
                     rabbitTemplate.convertAndSend(RabbitConst.zm_queue_risk_order_notify, riskAuditMessage);
+                    return;
                 } else {
-                    if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
-                        //聚合风控下单异常直接转入人工审核
-                        order.setStatus(ConstantUtils.unsettledOrderStatus);
-                        orderService.updateOrderByRisk(order);
-                    } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
-                        //融泽风控查询异常直接返回审批失败
-                        zmDetail = new DecisionZmDetail();
-                        zmDetail.setReturnCode("-1");
-                        zmDetail.setReturnInfo("fail");
-                        zmDetail.setScore("0.0");
-                        zmDetail.setOrderNo(riskAuditMessage.getOrderNo());
-                        zmDetail.setCreatetime(new Date());
-                        zmDetail.setUpdatetime(new Date());
-                        zmDetailService.insert(zmDetail);
-                        order.setStatus(ConstantUtils.rejectOrderStatus);
-                        orderService.updateOrderByRisk(order);
+                    //风控查询异常直接返回审批失败
+                    zmDetail = new DecisionZmDetail();
+                    zmDetail.setReturnCode("-1");
+                    zmDetail.setReturnInfo("fail");
+                    zmDetail.setScore("0.0");
+                    zmDetail.setOrderNo(riskAuditMessage.getOrderNo());
+                    zmDetail.setCreatetime(new Date());
+                    zmDetail.setUpdatetime(new Date());
+                    zmDetailService.insert(zmDetail);
+                    order.setStatus(ConstantUtils.rejectOrderStatus);
+                    orderService.updateOrderByRisk(order);
+                    if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
                         callBackRongZeService.pushOrderStatus(order);
                     }
                 }
@@ -139,25 +136,21 @@ public class ZmRiskManageConsumer {
                 rabbitTemplate.convertAndSend(RabbitConst.zm_queue_risk_order_notify, riskAuditMessage);
             } else {
                 try {
-                    if (riskAuditMessage.getSource() == ConstantUtils.ZERO) {
-                        //聚合风控下单异常直接转入人工审核
-                        order.setStatus(ConstantUtils.unsettledOrderStatus);
-                        orderService.updateOrderByRisk(order);
-                    } else if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
-                        DecisionZmDetail zmDetail = zmDetailService.selectByOrderNo(riskAuditMessage.getOrderNo());
-                        order.setStatus(ConstantUtils.rejectOrderStatus);
-                        orderService.updateOrderByRisk(order);
+                    DecisionZmDetail zmDetail = zmDetailService.selectByOrderNo(riskAuditMessage.getOrderNo());
+                    order.setStatus(ConstantUtils.rejectOrderStatus);
+                    orderService.updateOrderByRisk(order);
 
-                        if (zmDetail == null) {
-                            zmDetail = new DecisionZmDetail();
-                            zmDetail.setReturnCode("-1");
-                            zmDetail.setReturnInfo("fail");
-                            zmDetail.setScore("0.0");
-                            zmDetail.setOrderNo(riskAuditMessage.getOrderNo());
-                            zmDetail.setCreatetime(new Date());
-                            zmDetail.setUpdatetime(new Date());
-                            zmDetailService.insert(zmDetail);
-                        }
+                    if (zmDetail == null) {
+                        zmDetail = new DecisionZmDetail();
+                        zmDetail.setReturnCode("-1");
+                        zmDetail.setReturnInfo("fail");
+                        zmDetail.setScore("0.0");
+                        zmDetail.setOrderNo(riskAuditMessage.getOrderNo());
+                        zmDetail.setCreatetime(new Date());
+                        zmDetail.setUpdatetime(new Date());
+                        zmDetailService.insert(zmDetail);
+                    }
+                    if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
                         callBackRongZeService.pushOrderStatus(order);
                     }
                 } catch (Exception e1) {

@@ -72,6 +72,9 @@ public class PbRiskManageConsumer {
                     return;
                 }
                 uid = order.getUid();
+            } else {
+                log.error("十露盘风控消息错误，message={}", JSON.toJSONString(riskAuditMessage));
+                return;
             }
             Merchant merchant = merchantService.findMerchantByAlias(riskAuditMessage.getMerchant());
             if (merchant == null) {
@@ -121,7 +124,7 @@ public class PbRiskManageConsumer {
                 return;
             }
             try {
-                //融泽风控查询异常直接返回审批失败
+                //风控查询异常直接返回审批失败
                 DecisionPbDetail decisionPbDetail = decisionPbDetailService.selectByOrderNo(order.getOrderNo());
                 if (decisionPbDetail == null) {
                     decisionPbDetail = new DecisionPbDetail();

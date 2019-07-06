@@ -107,7 +107,7 @@ public class PbRiskManageQueryConsumer {
                 return;
             }
             try {
-                //融泽风控查询异常直接返回失败 更新风控表
+                //风控查询异常直接返回失败 更新风控表
                 DecisionPbDetail query = decisionPbDetailService.selectByOrderNo(riskAuditMessage.getOrderNo());
                 order.setStatus(ConstantUtils.rejectOrderStatus);
                 orderService.updateOrderByRisk(order);

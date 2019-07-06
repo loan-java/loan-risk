@@ -133,22 +133,18 @@ public class QjldRiskManageQueryConsumer {
                 return;
             }
             try {
-                if (qjldOrderIdMessage.getSource() == ConstantUtils.ZERO) {
-                    //聚合风控查询异常直接转入人工审核
-                    order.setStatus(ConstantUtils.unsettledOrderStatus);
-                    orderService.updateOrderByRisk(order);
-                } else if (qjldOrderIdMessage.getSource() == ConstantUtils.ONE) {
-                    //融泽风控查询异常直接返回审批失败 更新风控表
-                    DecisionResDetailDTO decisionRes = new DecisionResDetailDTO();
-                    decisionRes.setTrans_id(qjldOrderIdMessage.getTransId());
-                    decisionRes.setOrderStatus("FAIL");
-                    decisionRes.setCode(PolicyResultEnum.REJECT.getCode());
-                    decisionRes.setDesc("拒绝");
-                    TbDecisionResDetail resDetail = new TbDecisionResDetail(decisionRes);
-                    resDetail.setCreatetime(new Date());
-                    decisionResDetailService.updateByTransId(resDetail);
-                    order.setStatus(ConstantUtils.rejectOrderStatus);
-                    orderService.updateOrderByRisk(order);
+                //风控查询异常直接返回审批失败 更新风控表
+                DecisionResDetailDTO decisionRes = new DecisionResDetailDTO();
+                decisionRes.setTrans_id(qjldOrderIdMessage.getTransId());
+                decisionRes.setOrderStatus("FAIL");
+                decisionRes.setCode(PolicyResultEnum.REJECT.getCode());
+                decisionRes.setDesc("拒绝");
+                TbDecisionResDetail resDetail = new TbDecisionResDetail(decisionRes);
+                resDetail.setCreatetime(new Date());
+                decisionResDetailService.updateByTransId(resDetail);
+                order.setStatus(ConstantUtils.rejectOrderStatus);
+                orderService.updateOrderByRisk(order);
+                if (qjldOrderIdMessage.getSource() == ConstantUtils.ONE) {
                     callBackRongZeService.pushOrderStatus(order);
                 }
             } catch (Exception e1) {
