@@ -65,6 +65,10 @@ public class PbRiskManageConsumer {
                 }
                 if (order == null || order.getUid() == null || order.getOrderNo() == null) {
                     log.error("十露盘风控，订单不存在 message={}", JSON.toJSONString(riskAuditMessage));
+                    if (riskAuditMessage.getTimes() < 5) {
+                        riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
+                        rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_notify, riskAuditMessage);
+                    }
                     return;
                 }
                 if (order.getStatus() != 11) { // 新建的订单才能进入风控模块
@@ -118,7 +122,7 @@ public class PbRiskManageConsumer {
             //风控异常重新提交订单或者进入人工审核
             log.error("十露盘风控异常{}", JSON.toJSONString(riskAuditMessage));
             log.error("十露盘风控异常", e);
-            if (riskAuditMessage.getTimes() < 6) {
+            if (riskAuditMessage.getTimes() < 10) {
                 riskAuditMessage.setTimes(riskAuditMessage.getTimes() + 1);
                 rabbitTemplate.convertAndSend(RabbitConst.pb_queue_risk_order_notify, riskAuditMessage);
                 return;
