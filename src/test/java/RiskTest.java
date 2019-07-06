@@ -41,7 +41,8 @@ public class RiskTest {
     public void risk1() throws Exception {
         User user =userService.selectByPrimaryKey((long)1);
         String orderNo="1665673124496871424";
-        DecisionZmDetail zmDetail = zmDetailService.creditApply(user, orderNo);
+        Order order=orderService.findOrderByOrderNoAndSource(orderNo,OrderSourceEnum.RONGZE.getSoruce());
+        DecisionZmDetail zmDetail = zmDetailService.creditApply(user, order);
         System.out.println(JSONObject.toJSONString(zmDetail));
     }
 
