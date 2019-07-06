@@ -464,7 +464,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                     detail.setResult(PbResultEnum.DENY.getCode());
                     detail.setDesc("拒绝");
                 }
-                pbDetailMapper.updateByPrimaryKey(detail);
+                pbDetailMapper.updateByPrimaryKeySelective(detail);
             }
         } catch (Exception e) {
             e.printStackTrace();
