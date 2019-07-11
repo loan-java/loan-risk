@@ -1,7 +1,7 @@
 package com.mod.loan.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mod.loan.QjldHeTianHelper;
+import com.mod.loan.util.qjldUtil.QjldHeTianHelper;
 import com.mod.loan.config.qjld.QjldConfig;
 import com.mod.loan.model.DTO.QjldHeTianBaseReqDTO;
 import com.mod.loan.model.DTO.QjldHeTianReqDTO;

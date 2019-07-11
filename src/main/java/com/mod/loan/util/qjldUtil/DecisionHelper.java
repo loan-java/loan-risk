@@ -1,8 +1,9 @@
-package com.mod.loan;
+package com.mod.loan.util.qjldUtil;
 
 import com.mod.loan.api.DecisionEngineApi;
 import com.mod.loan.config.qjld.QjldConfig;
 import com.mod.loan.model.DTO.*;
+import com.mod.loan.util.RetrofitUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
