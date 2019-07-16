@@ -12,7 +12,6 @@ import com.mod.loan.mapper.UserInfoMapper;
 import com.mod.loan.model.*;
 import com.mod.loan.service.DecisionZmDetailService;
 import com.mod.loan.service.MerchantService;
-import com.mod.loan.service.OrderUserService;
 import com.mod.loan.util.DateUtil;
 import com.mod.loan.util.rongze.RongZeRequestUtil;
 import com.mod.loan.util.zmUtil.Contact;
@@ -45,9 +44,6 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
     @Resource
     private UserInfoMapper userInfoMapper;
 
-    @Resource
-    private OrderUserService orderUserService;
-
     @Autowired
     private MerchantService merchantService;
 
@@ -60,8 +56,7 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
             Merchant merchant = merchantService.findMerchantByAlias(user.getMerchant());
             String channel = merchant == null ? user.getMerchant() : merchant.getMerchantName();
 
-            OrderUser orderUser = orderUserService.selectByOrderNo(order.getOrderNo());
-            String applyTime = DateUtil.dateToStrLong(orderUser.getCreateTime());
+            String applyTime = DateUtil.dateToStrLong(order.getCreateTime());
             String mobile = user.getUserPhone();
             String name = user.getUserName();
             String idcard = user.getUserCertNo();

@@ -2,10 +2,8 @@
 import com.alibaba.fastjson.JSONObject;
 import com.mod.loan.Application;
 import com.mod.loan.common.enums.OrderSourceEnum;
-import com.mod.loan.common.enums.OrderTypeEnum;
 import com.mod.loan.model.DecisionZmDetail;
 import com.mod.loan.model.Order;
-import com.mod.loan.model.OrderUser;
 import com.mod.loan.model.User;
 import com.mod.loan.service.*;
 import lombok.extern.slf4j.Slf4j;
@@ -32,8 +30,6 @@ public class RiskTest {
     private CallBackRongZeService callBackRongZeService;
     @Autowired
     private UserService userService;
-    @Autowired
-    private OrderUserService orderUserService;
     @Autowired
     private OrderService orderService;
 

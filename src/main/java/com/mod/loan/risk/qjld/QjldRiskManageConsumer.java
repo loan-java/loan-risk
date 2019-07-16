@@ -70,7 +70,6 @@ public class QjldRiskManageConsumer {
     public void risk_order_notify(Message mess) {
         RiskAuditMessage riskAuditMessage = JSONObject.parseObject(mess.getBody(), RiskAuditMessage.class);
         Order order = null;
-        OrderUser orderUser = null;
         try {
             log.info("新颜风控信息,[notify]：" + riskAuditMessage.toString());
             //订单校验

@@ -40,10 +40,6 @@ public class QjldRiskManageQueryConsumer {
     @Autowired
     private OrderService orderService;
 
-
-    @Autowired
-    private OrderUserService orderUserService;
-
     @Autowired
     private MerchantService merchantService;
     @Autowired

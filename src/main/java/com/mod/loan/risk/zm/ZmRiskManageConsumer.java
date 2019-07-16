@@ -34,8 +34,6 @@ public class ZmRiskManageConsumer {
     @Autowired
     private OrderService orderService;
     @Autowired
-    private OrderUserService orderUserService;
-    @Autowired
     private MerchantService merchantService;
     @Autowired
     private UserService userService;

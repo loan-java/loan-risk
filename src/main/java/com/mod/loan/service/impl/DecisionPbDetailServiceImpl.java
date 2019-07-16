@@ -11,7 +11,6 @@ import com.mod.loan.mapper.*;
 import com.mod.loan.model.*;
 import com.mod.loan.service.DecisionPbDetailService;
 import com.mod.loan.service.MerchantService;
-import com.mod.loan.service.OrderUserService;
 import com.mod.loan.util.DateUtil;
 import com.mod.loan.util.StringUtil;
 import com.mod.loan.util.TimeUtils;
@@ -48,8 +47,6 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
     @Resource
     private UserInfoMapper userInfoMapper;
 
-    @Resource
-    private OrderUserService orderUserService;
 
     @Autowired
     private MerchantService merchantService;
@@ -62,16 +59,15 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
     public DecisionPbDetail creditApply(User user, Order order) throws Exception {
         DecisionPbDetail decisionPbDetail = null;
         try {
-            OrderUser orderUser = orderUserService.selectByOrderNo(order.getOrderNo());
             Merchant merchant = merchantService.findMerchantByAlias(user.getMerchant());
             if (merchant == null) {
                 throw new Exception("十路盘风控查询:商户不存" + user.getMerchant());
             }
             //是否存在关联的借贷信息
-            if (orderUser.getMerchantRateId() == null) {
-                throw new Exception("十路盘风控查询:商户不存在Order关联的借贷信息" + orderUser.toString());
+            if (order.getProductId() == null) {
+                throw new Exception("十路盘风控查询:商户不存在Order关联的借贷信息" + order.toString());
             }
-            MerchantRate merchantRate = merchantRateMapper.selectByPrimaryKey(orderUser.getMerchantRateId());
+            MerchantRate merchantRate = merchantRateMapper.selectByPrimaryKey(order.getProductId());
             if (merchantRate == null) {
                 throw new Exception("十路盘风控查询:商户不存在默认的借贷信息");
             }
@@ -135,7 +131,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
             String approvalTerm = String.valueOf(approvalTerm1.intValue()); //审批期限
             String termUnit = "1"; //期限单位，1 - 天
             riskData.put("apply_amount", approvalAmount);
-            riskData.put("apply_time", orderUser.getCreateTime());
+            riskData.put("apply_time", order.getCreateTime());
             UserBank userBank = userBankMapper.selectUserCurrentBankCard(user.getId());
             if (userBank != null) {
                 riskData.put("debit_card", userBank.getCardNo());
