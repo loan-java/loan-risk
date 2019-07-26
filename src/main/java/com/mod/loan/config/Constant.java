@@ -14,8 +14,14 @@ public class Constant {
     public static String rongZeCallbackUrl;
     public static String rongZeQueryUrl;
     public static String rongZePublicKey;
+    public static String rongZeOrgPrivateKey;
 
-    public static String rongzeOrgPrivateKey;
+    public static String bengBengRequestAppId;
+    public static String bengBengCallbackUrl;
+    public static String bengBengQueryUrl;
+    public static String bengBengPublicKey;
+    public static String bengBengOrgPrivateKey;
+
 
     @Value("${rongze.request.app.id:}")
     public void setRongZeRequestAppId(String rongZeRequestAppId) {
@@ -33,8 +39,8 @@ public class Constant {
     }
 
     @Value("${rongze.org.rsa.private.key:}")
-    public void setOrgPrivateKey(String rongzeOrgPrivateKey) {
-        Constant.rongzeOrgPrivateKey = rongzeOrgPrivateKey;
+    public void setOrgPrivateKey(String rongZeOrgPrivateKey) {
+        Constant.rongZeOrgPrivateKey = rongZeOrgPrivateKey;
     }
 
     @Value("${rongze.rsa.public.key:}")
@@ -52,5 +58,30 @@ public class Constant {
         Constant.ENVIROMENT = environment;
     }
 
+
+    @Value("${bengbeng.request.app.id:}")
+    public void setBengBengRequestAppId(String bengBengRequestAppId) {
+        Constant.bengBengRequestAppId = bengBengRequestAppId;
+    }
+
+    @Value("${bengbeng.callback.url:}")
+    public void setBengBengCallbackUrl(String bengBengCallbackUrl) {
+        Constant.bengBengCallbackUrl = bengBengCallbackUrl;
+    }
+
+    @Value("${bengbeng.query.url:}")
+    public void setBengBengQueryUrl(String bengBengQueryUrl) {
+        Constant.bengBengQueryUrl = bengBengQueryUrl;
+    }
+
+    @Value("${bengbeng.rsa.public.key:}")
+    public void setBengBengPublicKey(String bengBengPublicKey) {
+        Constant.bengBengPublicKey = bengBengPublicKey;
+    }
+
+    @Value("${bengbeng.org.rsa.private.key:}")
+    public void setBengBengOrgPrivateKey(String bengBengOrgPrivateKey) {
+        Constant.bengBengOrgPrivateKey = bengBengOrgPrivateKey;
+    }
 
 }
