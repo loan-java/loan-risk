@@ -21,7 +21,7 @@ public class RongZeRequestUtil {
     }
 
     private static String doPost(String url, String reqParamsStr) throws Exception {
-        String result = HttpClientUtils.sendPost(url, reqParamsStr.getBytes());
+        String result = RongZeHttpClientUtils.sendPost(url, reqParamsStr.getBytes());
 //        log.info("接口融泽请求结束");
         return result;
     }
@@ -32,11 +32,11 @@ public class RongZeRequestUtil {
     public static String buildRequestParams(String method, String bizData, String returnUrl) throws Exception {
         //说明：秘钥格式PKCS8，秘钥长度1024，签名方式RSA，字符集UTF-8
 
-        String despwd = StandardDesUtils.generateDesKey();
+        String despwd = RongZeStandardDesUtils.generateDesKey();
         RequestRongZeBean vo = new RequestRongZeBean();
         vo.setMethod(method);
         vo.setSign_type("RSA");
-        vo.setBiz_data(BizDataUtil.encryptBizData(bizData, despwd));
+        vo.setBiz_data(RongZeBizDataUtil.encryptBizData(bizData, despwd));
         vo.setBiz_enc("1");
         vo.setDes_key(genDescKey(despwd));
         vo.setApp_id(Constant.rongZeRequestAppId);
@@ -48,7 +48,7 @@ public class RongZeRequestUtil {
         String reqContent = JSONObject.toJSONString(vo);
 
         //设置签名
-        vo.setSign(SignUtil.genSign(reqContent));
+        vo.setSign(RongZeSignUtil.genSign(reqContent));
         return JSONObject.toJSONString(vo);
     }
 
@@ -58,7 +58,7 @@ public class RongZeRequestUtil {
 
     //生成 RSA 加密后的密钥
     public static String genDescKey(String despwd) throws Exception {
-        return RSAUtils.encrypt(despwd, Constant.rongZePublicKey);
+        return RongZeRSAUtils.encrypt(despwd, Constant.rongZePublicKey);
     }
 
     public static class RequestRongZeBean {

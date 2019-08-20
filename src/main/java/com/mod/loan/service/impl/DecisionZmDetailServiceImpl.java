@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.mod.loan.common.enums.OrderSourceEnum;
 import com.mod.loan.common.mapper.BaseServiceImpl;
 import com.mod.loan.config.Constant;
 import com.mod.loan.config.zm.ZmConfig;
@@ -13,6 +14,7 @@ import com.mod.loan.model.*;
 import com.mod.loan.service.DecisionZmDetailService;
 import com.mod.loan.service.MerchantService;
 import com.mod.loan.util.DateUtil;
+import com.mod.loan.util.bengbeng.BengBengRequestUtil;
 import com.mod.loan.util.rongze.RongZeRequestUtil;
 import com.mod.loan.util.zmUtil.Contact;
 import com.mod.loan.util.zmUtil.EmergencyContact;
@@ -64,8 +66,8 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
 //            String companyName = userInfo.getWorkCompany();
 //            String companyAddress = userInfo.getWorkAddress();
             Map<String, String> carrier_data = new HashMap<String, String>();
-            carrier_data.put("jxl_report", JSON.toJSONString(jxlAccessReport(order.getOrderNo()), SerializerFeature.WriteMapNullValue));
-            carrier_data.put("jxl_raw", JSON.toJSONString(jxlOriginalData(order.getOrderNo()), SerializerFeature.WriteMapNullValue));
+            carrier_data.put("jxl_report", JSON.toJSONString(jxlAccessReport(order.getOrderNo(), order.getSource()), SerializerFeature.WriteMapNullValue));
+            carrier_data.put("jxl_raw", JSON.toJSONString(jxlOriginalData(order.getOrderNo(), order.getSource()), SerializerFeature.WriteMapNullValue));
 
             ZhimiRiskRequest request = new ZhimiRiskRequest();
             request.setModel_name(model_name);
@@ -123,14 +125,23 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
     }
 
     //聚信立
-    public JSONObject jxlOriginalData(String orderNo) {
+    public JSONObject jxlOriginalData(String orderNo, Integer soruce) {
         JSONObject report = null;
         try {
             JSONObject jsonObject1 = new JSONObject();
             jsonObject1.put("order_no", orderNo);
             jsonObject1.put("type", "1");
             for (int times = 0; times < 10 && report == null; times++) {
-                String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                String result = null;
+                if (OrderSourceEnum.isRongZe(soruce)) {
+                    result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                }
+                else if (OrderSourceEnum.isBengBeng(soruce)) {
+                    result = BengBengRequestUtil.doPost(Constant.bengBengQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                }
+                else{
+                    return null;
+                }
                 //判断运营商数据
                 JSONObject jsonObject = JSONObject.parseObject(result);
                 if (jsonObject.containsKey("data")) {
@@ -151,14 +162,23 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
         return report == null ? new JSONObject() : report;
     }
 
-    public JSONObject jxlAccessReport(String orderNo) {
+    public JSONObject jxlAccessReport(String orderNo, Integer soruce) {
         JSONObject report = null;
         try {
             JSONObject jsonObject1 = new JSONObject();
             jsonObject1.put("order_no", orderNo);
             jsonObject1.put("type", "2");
             for (int times = 0; times < 10 && report == null; times++) {
-                String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                String result = null;
+                if (OrderSourceEnum.isRongZe(soruce)) {
+                    result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                }
+                else if (OrderSourceEnum.isBengBeng(soruce)) {
+                    result = BengBengRequestUtil.doPost(Constant.bengBengQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                }
+                else{
+                    return null;
+                }
                 //判断运营商数据
                 JSONObject jsonObject = JSONObject.parseObject(result);
                 if (jsonObject.containsKey("data")) {

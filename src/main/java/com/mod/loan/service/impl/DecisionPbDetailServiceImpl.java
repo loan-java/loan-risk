@@ -3,6 +3,7 @@ package com.mod.loan.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.mod.loan.common.enums.OrderSourceEnum;
 import com.mod.loan.common.enums.PbResultEnum;
 import com.mod.loan.common.mapper.BaseServiceImpl;
 import com.mod.loan.config.Constant;
@@ -14,6 +15,7 @@ import com.mod.loan.service.MerchantService;
 import com.mod.loan.util.DateUtil;
 import com.mod.loan.util.StringUtil;
 import com.mod.loan.util.TimeUtils;
+import com.mod.loan.util.bengbeng.BengBengRequestUtil;
 import com.mod.loan.util.pbUtil.PanbaoClient;
 import com.mod.loan.util.pbUtil.dto.request.ApplyWithCreditRequest;
 import com.mod.loan.util.pbUtil.dto.request.QueryCreditResultRequest;
@@ -145,8 +147,8 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                 riskData.put("behavior", behavior);
             }
             //如为聚信立
-            riskData.put("jxlAccessReport", jxlAccessReport(order.getOrderNo()));
-            riskData.put("jxlOriginalData", jxlOriginalData(order.getOrderNo()));
+            riskData.put("jxlAccessReport", jxlAccessReport(order.getOrderNo(), order.getSource()));
+            riskData.put("jxlOriginalData", jxlOriginalData(order.getOrderNo(), order.getSource()));
             log.info("订单：" + order.getOrderNo() + "聚信立信息,聚信立运营商报告是否为空：" + (riskData.get("jxlAccessReport") == null));
             log.info("订单：" + order.getOrderNo() + "聚信立信息,原始运营商报告是否为空：" + (riskData.get("jxlOriginalData") == null));
             //判断是否存在
@@ -256,14 +258,21 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
     }
 
     //聚信立
-    public JSONObject jxlOriginalData(String orderNo) {
+    public JSONObject jxlOriginalData(String orderNo, Integer soruce) {
         JSONObject report = null;
         try {
             JSONObject jsonObject1 = new JSONObject();
             jsonObject1.put("order_no", orderNo);
             jsonObject1.put("type", "1");
             for (int times = 0; times < 10 && report == null; times++) {
-                String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                String result = null;
+                if (OrderSourceEnum.isRongZe(soruce)) {
+                    result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                } else if (OrderSourceEnum.isBengBeng(soruce)) {
+                    result = BengBengRequestUtil.doPost(Constant.bengBengQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                } else {
+                    return null;
+                }
 //                log.warn("原始运营商报告数据的融泽返回结果："+result);
                 //判断运营商数据
                 JSONObject jsonObject = JSONObject.parseObject(result);
@@ -310,14 +319,21 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
         return report;
     }
 
-    public JSONObject jxlAccessReport(String orderNo) {
+    public JSONObject jxlAccessReport(String orderNo, Integer soruce) {
         JSONObject report = null;
         try {
             JSONObject jsonObject1 = new JSONObject();
             jsonObject1.put("order_no", orderNo);
             jsonObject1.put("type", "2");
             for (int times = 0; times < 10 && report == null; times++) {
-                String result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                String result = null;
+                if (OrderSourceEnum.isRongZe(soruce)) {
+                    result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                } else if (OrderSourceEnum.isBengBeng(soruce)) {
+                    result = BengBengRequestUtil.doPost(Constant.bengBengQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                } else {
+                    return null;
+                }
 //                log.warn("聚信立运营商报告数据的融泽返回结果："+result);
                 //判断运营商数据
                 JSONObject jsonObject = JSONObject.parseObject(result);
