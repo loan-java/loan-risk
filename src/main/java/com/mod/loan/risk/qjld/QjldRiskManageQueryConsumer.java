@@ -3,6 +3,7 @@ package com.mod.loan.risk.qjld;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.mod.loan.common.enums.JuHeCallBackEnum;
+import com.mod.loan.common.enums.OrderSourceEnum;
 import com.mod.loan.common.enums.OrderStatusEnum;
 import com.mod.loan.common.enums.PolicyResultEnum;
 import com.mod.loan.common.message.QjldOrderIdMessage;
@@ -64,6 +65,8 @@ public class QjldRiskManageQueryConsumer {
     private CallBackJuHeService callBackJuHeService;
     @Resource
     private CallBackRongZeService callBackRongZeService;
+    @Resource
+    private CallBackBengBengService callBackBengBengService;
 
 
     @RabbitListener(queues = "qjld_queue_risk_order_result", containerFactory = "qjld_risk_order_result")
@@ -116,7 +119,11 @@ public class QjldRiskManageQueryConsumer {
                 }
             }
             if (qjldOrderIdMessage.getSource() == ConstantUtils.ONE) {
-                callBackRongZeService.pushOrderStatus(order);
+                if(OrderSourceEnum.isRongZe(order.getSource())) {
+                    callBackRongZeService.pushOrderStatus(order);
+                }else if(OrderSourceEnum.isBengBeng(order.getSource())) {
+                    callBackBengBengService.pushOrderStatus(order);
+                }
             }
             log.info("新颜分控订单,[result]：结束");
         } catch (Exception e) {
@@ -141,7 +148,11 @@ public class QjldRiskManageQueryConsumer {
                 order.setStatus(ConstantUtils.rejectOrderStatus);
                 orderService.updateOrderByRisk(order);
                 if (qjldOrderIdMessage.getSource() == ConstantUtils.ONE) {
-                    callBackRongZeService.pushOrderStatus(order);
+                    if(OrderSourceEnum.isRongZe(order.getSource())) {
+                        callBackRongZeService.pushOrderStatus(order);
+                    }else if(OrderSourceEnum.isBengBeng(order.getSource())) {
+                        callBackBengBengService.pushOrderStatus(order);
+                    }
                 }
             } catch (Exception e1) {
                 log.error("新颜风控订单查询异常2", e);

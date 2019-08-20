@@ -2,6 +2,7 @@ package com.mod.loan.risk.qjld;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.mod.loan.common.enums.OrderSourceEnum;
 import com.mod.loan.common.enums.PolicyResultEnum;
 import com.mod.loan.common.message.QjldOrderIdMessage;
 import com.mod.loan.common.message.RiskAuditMessage;
@@ -64,6 +65,8 @@ public class QjldRiskManageConsumer {
 
     @Resource
     private CallBackRongZeService callBackRongZeService;
+    @Resource
+    private CallBackBengBengService callBackBengBengService;
 
     @RabbitListener(queues = "qjld_queue_risk_order_notify", containerFactory = "qjld_risk_order_notify")
     @RabbitHandler
@@ -140,7 +143,11 @@ public class QjldRiskManageConsumer {
                 order.setStatus(ConstantUtils.rejectOrderStatus);
                 orderService.updateOrderByRisk(order);
                 if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
-                    callBackRongZeService.pushOrderStatus(order);
+                    if(OrderSourceEnum.isRongZe(order.getSource())) {
+                        callBackRongZeService.pushOrderStatus(order);
+                    }else if(OrderSourceEnum.isBengBeng(order.getSource())) {
+                        callBackBengBengService.pushOrderStatus(order);
+                    }
                 }
             } catch (Exception e1) {
                 log.error("新颜风控异常2", e);

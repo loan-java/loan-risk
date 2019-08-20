@@ -13,7 +13,7 @@ import java.net.URL;
  * @描述: http client请求工具类 @作者： 李运期 @创建时间： 2016年9月21日 上午10:41:19
  */
 @Slf4j
-public class HttpClientUtils {
+public class BengBengHttpClientUtils {
 
     /**
      * 默认的编码,解决中文乱码
@@ -46,9 +46,9 @@ public class HttpClientUtils {
             // 根据ResponseCode判断连接是否成功
             int responseCode = con.getResponseCode();
             if (responseCode != 200) {
-                log.error("请求失败，返回:{}", responseCode);
+                log.error("请求失败，返回:" + responseCode);
             } else {
-                log.info("请求成功，返回:{}", responseCode);
+                log.info("请求成功，返回:" + responseCode);
             }
 
             result.append(getContent(con.getInputStream(), "UTF-8"));

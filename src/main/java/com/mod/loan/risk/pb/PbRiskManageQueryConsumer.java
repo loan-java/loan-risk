@@ -2,11 +2,13 @@ package com.mod.loan.risk.pb;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.mod.loan.common.enums.OrderSourceEnum;
 import com.mod.loan.common.enums.PbResultEnum;
 import com.mod.loan.common.message.RiskAuditMessage;
 import com.mod.loan.config.rabbitmq.RabbitConst;
 import com.mod.loan.model.DecisionPbDetail;
 import com.mod.loan.model.Order;
+import com.mod.loan.service.CallBackBengBengService;
 import com.mod.loan.service.CallBackRongZeService;
 import com.mod.loan.service.DecisionPbDetailService;
 import com.mod.loan.service.OrderService;
@@ -40,7 +42,8 @@ public class PbRiskManageQueryConsumer {
     private RabbitTemplate rabbitTemplate;
     @Resource
     private CallBackRongZeService callBackRongZeService;
-
+    @Resource
+    private CallBackBengBengService callBackBengBengService;
 
     @RabbitListener(queues = "pb_queue_risk_order_result", containerFactory = "pb_risk_order_result")
     @RabbitHandler
@@ -94,7 +97,11 @@ public class PbRiskManageQueryConsumer {
                 }
             }
             if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
-                callBackRongZeService.pushOrderStatus(order);
+                if(OrderSourceEnum.isRongZe(order.getSource())) {
+                    callBackRongZeService.pushOrderStatus(order);
+                }else if(OrderSourceEnum.isBengBeng(order.getSource())) {
+                    callBackBengBengService.pushOrderStatus(order);
+                }
             }
             log.info("==============十露盘分控订单,[result]：结束==============");
         } catch (Exception e) {
@@ -112,7 +119,11 @@ public class PbRiskManageQueryConsumer {
                 order.setStatus(ConstantUtils.rejectOrderStatus);
                 orderService.updateOrderByRisk(order);
                 if (riskAuditMessage.getSource() == ConstantUtils.ONE) {
-                    callBackRongZeService.pushOrderStatus(order);
+                    if(OrderSourceEnum.isRongZe(order.getSource())) {
+                        callBackRongZeService.pushOrderStatus(order);
+                    }else if(OrderSourceEnum.isBengBeng(order.getSource())) {
+                        callBackBengBengService.pushOrderStatus(order);
+                    }
                 }
                 if (query == null) {
                     log.error("十露盘风控表数据不存在[query]，message={}", JSON.toJSONString(riskAuditMessage));
