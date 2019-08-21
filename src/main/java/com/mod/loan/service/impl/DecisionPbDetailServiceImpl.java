@@ -263,7 +263,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
         try {
             JSONObject jsonObject1 = new JSONObject();
             jsonObject1.put("order_no", orderNo);
-            jsonObject1.put("type", "2");
+            jsonObject1.put("type", "1");
             for (int times = 0; times < 10 && report == null; times++) {
                 String result = null;
                 if (OrderSourceEnum.isRongZe(soruce)) {
@@ -324,7 +324,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
         try {
             JSONObject jsonObject1 = new JSONObject();
             jsonObject1.put("order_no", orderNo);
-            jsonObject1.put("type", "2");
+            jsonObject1.put("type", "1");
             for (int times = 0; times < 10 && report == null; times++) {
                 String result = null;
                 if (OrderSourceEnum.isRongZe(soruce)) {
