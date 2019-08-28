@@ -273,7 +273,6 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                 } else {
                     return null;
                 }
-//                log.warn("原始运营商报告数据的融泽返回结果："+result);
                 //判断运营商数据
                 JSONObject jsonObject = JSONObject.parseObject(result);
                 if (jsonObject.containsKey("data")) {
@@ -334,7 +333,6 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                 } else {
                     return null;
                 }
-//                log.warn("聚信立运营商报告数据的融泽返回结果："+result);
                 //判断运营商数据
                 JSONObject jsonObject = JSONObject.parseObject(result);
                 if (jsonObject.containsKey("data")) {
