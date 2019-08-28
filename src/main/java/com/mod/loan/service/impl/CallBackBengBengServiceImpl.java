@@ -5,8 +5,6 @@ import com.mod.loan.config.Constant;
 import com.mod.loan.mapper.MerchantRateMapper;
 import com.mod.loan.model.Order;
 import com.mod.loan.service.CallBackBengBengService;
-import com.mod.loan.service.CallBackRongZeService;
-
 import com.mod.loan.util.bengbeng.BengBengRequestUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -58,7 +56,7 @@ public class CallBackBengBengServiceImpl implements CallBackBengBengService {
         Map<String, Object> map = new HashMap<>();
         map.put("order_no", order.getOrderNo());
         map.put("order_status", status);
-        map.put("update_time", updateTime);
+        map.put("update_time", updateTime / 1000);
         map.put("remark", remark);
         postOrderStatus(map);
     }
