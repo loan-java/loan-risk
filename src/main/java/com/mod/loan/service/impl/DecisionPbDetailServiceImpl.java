@@ -257,7 +257,7 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
         return jsonArray;
     }
 
-    //聚信立
+    //原始
     public JSONObject jxlOriginalData(String orderNo, Integer soruce) {
         JSONObject report = null;
         try {
@@ -268,22 +268,31 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
                 String result = null;
                 if (OrderSourceEnum.isRongZe(soruce)) {
                     result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
-                } else if (OrderSourceEnum.isBengBeng(soruce)) {
-                    result = BengBengRequestUtil.doPost(Constant.bengBengQueryUrl, "api.charge.data", jsonObject1.toJSONString());
-                } else {
-                    return null;
-                }
-                //判断运营商数据
-                JSONObject jsonObject = JSONObject.parseObject(result);
-                if (jsonObject.containsKey("data")) {
-                    String dataStr = jsonObject.getString("data");
-                    JSONObject all = JSONObject.parseObject(dataStr);
-                    if (all.containsKey("data")) {
-                        JSONObject data = all.getJSONObject("data");
-                        if (data.containsKey("report")) {
-                            report = data.getJSONObject("report");
+                    //判断运营商数据
+                    JSONObject jsonObject = JSONObject.parseObject(result);
+                    if (jsonObject.containsKey("data")) {
+                        String dataStr = jsonObject.getString("data");
+                        JSONObject all = JSONObject.parseObject(dataStr);
+                        if (all.containsKey("data")) {
+                            JSONObject data = all.getJSONObject("data");
+                            if (data.containsKey("report")) {
+                                report = data.getJSONObject("report");
+                            }
                         }
                     }
+                } else if (OrderSourceEnum.isBengBeng(soruce)) {
+                    result = BengBengRequestUtil.doPost(Constant.bengBengQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                    //判断运营商数据
+                    JSONObject jsonObject = JSONObject.parseObject(result);
+                    if (jsonObject.containsKey("data")) {
+                        String dataStr = jsonObject.getString("data");
+                        JSONObject all = JSONObject.parseObject(dataStr);
+                        if (all.containsKey("raw_data")) {
+                            report = all.getJSONObject("raw_data");
+                        }
+                    }
+                } else {
+                    return null;
                 }
                 log.info(orderNo + "原始运营商报告数据当前获取运营报告循环次数:{}", times);
             }
@@ -318,36 +327,46 @@ public class DecisionPbDetailServiceImpl extends BaseServiceImpl<DecisionPbDetai
         return report;
     }
 
+    //聚信立
     public JSONObject jxlAccessReport(String orderNo, Integer soruce) {
         JSONObject report = null;
         try {
             JSONObject jsonObject1 = new JSONObject();
             jsonObject1.put("order_no", orderNo);
-            jsonObject1.put("type", "1");
+            jsonObject1.put("type", "2");
             for (int times = 0; times < 10 && report == null; times++) {
                 String result = null;
                 if (OrderSourceEnum.isRongZe(soruce)) {
                     result = RongZeRequestUtil.doPost(Constant.rongZeQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                    //判断运营商数据
+                    JSONObject jsonObject = JSONObject.parseObject(result);
+                    if (jsonObject.containsKey("data")) {
+                        String dataStr = jsonObject.getString("data");
+                        JSONObject all = JSONObject.parseObject(dataStr);
+                        if (all.containsKey("data")) {
+                            JSONObject data = all.getJSONObject("data");
+                            if (data.containsKey("report")) {
+                                report = data.getJSONObject("report");
+                            }
+                        }
+                    }
                 } else if (OrderSourceEnum.isBengBeng(soruce)) {
                     result = BengBengRequestUtil.doPost(Constant.bengBengQueryUrl, "api.charge.data", jsonObject1.toJSONString());
+                    //判断运营商数据
+                    JSONObject jsonObject = JSONObject.parseObject(result);
+                    if (jsonObject.containsKey("data")) {
+                        String dataStr = jsonObject.getString("data");
+                        JSONObject all = JSONObject.parseObject(dataStr);
+                        if (all.containsKey("report_data")) {
+                            report = all.getJSONObject("report_data");
+                        }
+                    }
                 } else {
                     return null;
                 }
-                //判断运营商数据
-                JSONObject jsonObject = JSONObject.parseObject(result);
-                if (jsonObject.containsKey("data")) {
-                    String dataStr = jsonObject.getString("data");
-                    JSONObject all = JSONObject.parseObject(dataStr);
-                    if (all.containsKey("data")) {
-                        JSONObject data = all.getJSONObject("data");
-                        if (data.containsKey("report")) {
-                            report = data.getJSONObject("report");
-                        }
-                    }
-                }
+
                 log.info(orderNo + "聚信立运营商报告数据当前获取运营报告循环次数:{}", times);
             }
-//            log.warn("聚信立运营商报告数据:{}, {}", orderNo, report == null ? null : report.toJSONString());
         } catch (Exception e) {
             log.error(orderNo + "获取聚信立运营商报告数据出错", e);
         }
