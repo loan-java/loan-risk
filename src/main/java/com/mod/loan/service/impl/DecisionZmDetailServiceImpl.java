@@ -139,18 +139,23 @@ public class DecisionZmDetailServiceImpl extends BaseServiceImpl<DecisionZmDetai
                 else if (OrderSourceEnum.isBengBeng(soruce)) {
                     result = BengBengRequestUtil.doPost(Constant.bengBengQueryUrl, "api.charge.data", jsonObject1.toJSONString());
                 }
+                else if (OrderSourceEnum.isWhole(soruce)) {
+                    result = null;
+                }
                 else{
                     return null;
                 }
-                //判断运营商数据
-                JSONObject jsonObject = JSONObject.parseObject(result);
-                if (jsonObject.containsKey("data")) {
-                    String dataStr = jsonObject.getString("data");
-                    JSONObject all = JSONObject.parseObject(dataStr);
-                    if (all.containsKey("data")) {
-                        JSONObject data = all.getJSONObject("data");
-                        if (data.containsKey("report")) {
-                            report = data.getJSONObject("report");
+                if(result != null) {
+                    //判断运营商数据
+                    JSONObject jsonObject = JSONObject.parseObject(result);
+                    if (jsonObject.containsKey("data")) {
+                        String dataStr = jsonObject.getString("data");
+                        JSONObject all = JSONObject.parseObject(dataStr);
+                        if (all.containsKey("data")) {
+                            JSONObject data = all.getJSONObject("data");
+                            if (data.containsKey("report")) {
+                                report = data.getJSONObject("report");
+                            }
                         }
                     }
                 }
