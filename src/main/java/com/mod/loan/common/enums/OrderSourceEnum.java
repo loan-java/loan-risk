@@ -7,7 +7,8 @@ public enum OrderSourceEnum {
 
     JUHE(0, "聚合"),
     RONGZE(1, "融泽"),
-    BENGBENG(2, "蹦蹦");
+    BENGBENG(2, "蹦蹦"),
+    WHOLE(3, "全流程");
 
     private Integer soruce;
     private String desc;
@@ -29,8 +30,8 @@ public enum OrderSourceEnum {
     }
 
 
-    public static boolean isBengBeng(int source) {
-        return BENGBENG.getSoruce() == source;
+    public static boolean isWhole(int source) {
+        return WHOLE.getSoruce() == source;
     }
 
 
